@@ -1,0 +1,12 @@
+At top is 2D scatterplot of all solutions (there will be empty space above this for our small multiples to be generated and shown here -- see below).
+Each axis encodes an objective (say, sediment on Y, fire on X)
+Color for each point is determined by climate scenario.
+Each axis has an axis label. Clicking on the axis label changes the objective plotted on that axis.
+Keep clicking on the axis label => keep cycling through the three objectives.
+Each point allows data on demand.
+This on-demand data includes:
+	- the value of each objective at that point (tooltip)
+	- the climate scenario (tooltip)
+	- small-multiples maps appear across top of page: one for a value at the beginning, one showing management in the first time period, one showing management in the second time period, and one showing the end situation (again, some value).
+		- The beginning and ending maps show the value of an objective, which can be changed by clicking some text
+		- never made a map in D3 before. this link looks helpful: http://bost.ocks.org/mike/map/
