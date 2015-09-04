@@ -14,47 +14,6 @@ body{
     font-size: 10px;
 }
 
-nav ul {
-    background-color: #492a7c;
-    overflow: hidden;
-    color: #f7f7f7;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    -webkit-transition: max-height 0.4s;
-    -ms-transition: max-height 0.4s;
-    -moz-transition: max-height 0.4s;
-    -o-transition: max-height 0.4s;
-    transition: max-height 0.4s;
-}
-
-#headline-li{
-    text-align: left;
-    font-weight: bold;
-}
-
-#headline-span{
-    font-size: 2em;
-}
-
-#headline-li:hover{
-    background-color: #492a7c;
-}
-
-nav ul li {
-    display: inline-block;
-    padding: 20px;
-}
-
-nav ul li:hover{
-    background-color: #331d56;
-}
-
-nav a {
-    text-decoration: none;
-    color: inherit;
-}
-
 main {
     padding: 10px;
     line-height: 1.5em;
@@ -132,6 +91,10 @@ footer a{
 
 .dot {
   stroke: #000;
+}
+
+.axis .label:hover {
+    text-decoration: underline;
 }
 
 /* End d3 styling from final project work*/
