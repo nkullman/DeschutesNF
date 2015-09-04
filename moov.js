@@ -17,6 +17,26 @@ var xAxis = d3.svg.axis()
 var yAxis = d3.svg.axis()
     .scale(yScale)
     .orient("left");
+    
+var xVar,
+    yVar,
+    scatterPlotCols,
+    objectives,
+    numObjectives;
+    
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    var result = "";
+    for (var col in scatterPlotCols){
+      if (col !== "SolutionIndex"){
+        result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + d[scatterPlotCols[col]] + "</span>"
+        if (col !== scatterPlotCols.length - 1) { result += "<br>";}
+      };
+    }
+    return result;
+  })
 	
 var svg = d3.select(".scatterplotDiv").append("svg")
     .attr('viewBox', "0 0 " + (width + margin.right + margin.left) + " " + (height + margin.top + margin.bottom))
@@ -24,21 +44,23 @@ var svg = d3.select(".scatterplotDiv").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
+svg.call(tip);
+    
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
   
-  var scatterPlotCols = Object.keys(data[0]);
-  var objectives = [];
+  scatterPlotCols = Object.keys(data[0]);
+  objectives = [];
   scatterPlotCols.forEach(function(d){
     if (d !== "Frontier" && d !== "SolutionIndex"){
       objectives.push(d);
     }
   });
-  var numObjectives = objectives.length;
+  numObjectives = objectives.length;
   var xVarCtr = 0,
       yVarCtr = 1;
-  var xVar = updateVar(xVarCtr),
-      yVar = updateVar(yVarCtr);
+  xVar = updateVar(xVarCtr);
+  yVar = updateVar(yVarCtr);
   function updateVar(varCtr){
       return objectives[varCtr % numObjectives];
   }
@@ -85,10 +107,15 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .data(data)
     .enter().append("circle")
       .attr("class", "dot")
+      .classed("selected", false)
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide)
+      .on("click", toggleSelected)
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
-      .style("fill", function(d) { return colorScale(d.Frontier); });
+      .style("fill", function(d) { return colorScale(d.Frontier); })
+      .style("opacity", 0.6);
 
   var legend = svg.selectAll(".legend")
       .data(colorScale.domain())
@@ -135,6 +162,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     // update the circles
     d3.selectAll(".dot").transition()
       .attr("cx", function(d) {return xScale(d[xVar])});
+  }
+  
+  function toggleSelected(){
+    d3.select(this).classed("selected", !d3.select(this).classed("selected"))
   }
 
 });

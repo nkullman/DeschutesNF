@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-      <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-      <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="description" content="The Multi-Objective Optimization Visualization tool (MOOV) shows on-the-ground impacts of climate change on forest ecosystem services and management practices.">
       <link rel="stylesheet" type="text/css" href="visualization/MOOVWebpageStyles.css">
-      <script src="visualization/d3.v3.min.js" charset="utf-8"></script><style type="text/css"></style>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+      <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
       <title>MOOV</title>
 </head>
 <body>
-   <div class="wrapper"> 
+   <div class="container-fluid"> 
       <main>
       <div class="studyTitle">
         <h2>Climate Change in the Deschutes National Forest</h2>
@@ -32,10 +31,7 @@
                <li><a href="https://uw.edu"><img src="visualization/images/UW_Block_W_logo.png" alt="University-of-Washington" height="37px"></a></li>
             </ul>
       </footer>
-   </div> <!-- wrapper -->
-   <!-- make visualization -->
+   </div> <!-- container-fluid -->
    <script src="moov.js"></script>
-   <!-- enable tooltips -->
-   <script>$(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});</script>
 </body>
 </html>
