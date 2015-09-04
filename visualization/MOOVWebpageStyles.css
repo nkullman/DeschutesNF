@@ -1,0 +1,174 @@
+html,body {
+    height:100%;
+}
+
+.wrapper {
+	min-height:100%;
+	position:relative;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+nav ul {
+    background-color: #492a7c;
+    overflow: hidden;
+    color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    -webkit-transition: max-height 0.4s;
+    -ms-transition: max-height 0.4s;
+    -moz-transition: max-height 0.4s;
+    -o-transition: max-height 0.4s;
+    transition: max-height 0.4s;
+}
+
+#headline-li{
+    text-align: left;
+    font-weight: bold;
+}
+
+#headline-span{
+    font-size: 2em;
+}
+
+#headline-li:hover{
+    background-color: #492a7c;
+}
+
+nav ul li {
+    display: inline-block;
+    padding: 20px;
+}
+
+nav ul li:hover{
+    background-color: #331d56;
+}
+
+nav a {
+    text-decoration: none;
+    color: inherit;
+}
+
+main {
+    padding: 10px;
+    line-height: 1.5em;
+    font-size: 0.9em;
+    width: 95%;
+    margin: 0 auto;
+    padding-bottom: 55px;
+}
+
+.studyTitle {
+    width: 60%;
+    text-align: center;
+}
+/* Protein navigation/selection area styling */
+.scatterplot-area-wrap{
+    width: 100%;
+    display: block;
+}
+.scatterplot-wrap{
+    max-height: 100%;
+    border: none;
+}
+
+.scatterplotDiv{
+    width: 75%;
+    display: block;
+    padding: 0;
+    margin: 0 auto;
+    text-align: center;
+    padding-bottom: 20px;
+}
+fieldset{
+    border: none;
+}
+
+footer{
+    background-color: #F8F8F8;
+    width:100%;
+    height: 55px;
+	position:absolute;
+	bottom:0;
+	left:0;
+    line-height: 1.5em;
+    font-size: 0.9em;
+}
+
+footer ul{
+    color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+footer ul li {
+    display: inline-block;
+    padding: 10px;
+    padding-bottom: 0;
+}
+
+footer a{
+    text-decoration: none;
+    color: inherit;
+}
+
+/* End of styling for navigation area */
+
+/* Begin d3 styling from final project work*/
+.y.axis path {
+  display: none;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.box .whisker {
+  stroke: #000;
+  stroke-width: 1px;
+}
+.box .median {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+.box .middle50 {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+.box .outer25 {
+  stroke: #000;
+  stroke-width: 1px;
+  stroke-dasharray: 3,3;
+}
+
+.box .boxplotpoint {
+  fill: #CCBADC;
+  stroke: #666;
+  stroke-opacity: .7;
+  fill-opacity: .7;
+}
+
+.axis,
+.tick > text {
+    font-size: .8em;
+}
+.tablesvg text {
+    font-size: .9em;
+}
+
+/* End d3 styling from final project work*/
+
+/* Drilldown stats area styling */
+
+/* End styling for drilldown. */
