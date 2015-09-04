@@ -11,6 +11,7 @@ body{
     margin: 0;
     padding: 0;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10px;
 }
 
 nav ul {
@@ -121,9 +122,7 @@ footer a{
 /* End of styling for navigation area */
 
 /* Begin d3 styling from final project work*/
-.y.axis path {
-  display: none;
-}
+
 .axis path,
 .axis line {
   fill: none;
@@ -131,40 +130,8 @@ footer a{
   shape-rendering: crispEdges;
 }
 
-.box .whisker {
+.dot {
   stroke: #000;
-  stroke-width: 1px;
-}
-.box .median {
-  stroke: #000;
-  stroke-width: 2px;
-}
-
-.box .middle50 {
-  fill: #fff;
-  stroke: #000;
-  stroke-width: 1px;
-}
-
-.box .outer25 {
-  stroke: #000;
-  stroke-width: 1px;
-  stroke-dasharray: 3,3;
-}
-
-.box .boxplotpoint {
-  fill: #CCBADC;
-  stroke: #666;
-  stroke-opacity: .7;
-  fill-opacity: .7;
-}
-
-.axis,
-.tick > text {
-    font-size: .8em;
-}
-.tablesvg text {
-    font-size: .9em;
 }
 
 /* End d3 styling from final project work*/
