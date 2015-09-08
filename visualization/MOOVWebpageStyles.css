@@ -27,7 +27,7 @@ main {
     width: 60%;
     text-align: center;
 }
-/* Protein navigation/selection area styling */
+/* Scatterplot area styling */
 .scatterplot-area-wrap{
     width: 100%;
     display: block;
@@ -100,6 +100,27 @@ footer a{
 
 .dot.selected {
   opacity: 1.0;
+}
+
+.pcbackground path {
+  fill: none;
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+}
+
+.pcforeground path {
+  fill: none;
+  stroke: steelblue;
+}
+
+.brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.drilldownDiv .axis text {
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
 
 /* End d3 styling */

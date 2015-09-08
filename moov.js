@@ -1,5 +1,3 @@
-var gonnaseeya;
-
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
@@ -107,7 +105,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("y", -6)
       .style("text-anchor", "end")
       .style("cursor", "pointer")
-      .text(xVar); // will have to add more logic and hard-coded details if we want to add units, make more descriptive, etc.
+      .text(xVar);
 
   svg.append("g")
       .attr("class", "y axis")
@@ -120,7 +118,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .style("cursor", "pointer")
-      .text(yVar) // will have to add more logic and hard-coded details if we want to add units, make more descriptive, etc.
+      .text(yVar);
 
   svg.selectAll(".dot")
       .data(data)
@@ -156,6 +154,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .text(function(d) { return d; });
       
   drawDrilldown(drilldownTypeSelector);
+  
+  d3.select("#makeParallelCoordsButton")
+    .on("click", function(){
+      drilldownTypeSelector = 0;
+      drawDrilldown(drilldownTypeSelector);
+    })
       
  function updateYAxis(){
    // update what the variable encoded is
@@ -190,6 +194,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   
   function drawDrilldown(drilldownTypeSelector){
+    d3.select(".drilldownDiv").html("");
     if (drilldownTypeSelector === 0){
       drawParallelCoordsPlot();
     }
@@ -233,8 +238,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
           .range([height, 0]));
     }));
     
-    console.log(pcyScale);
-    
     // Add grey background lines for context.
     pcbackground = pcsvg.append("g")
         .attr("class", "pcbackground")
@@ -244,7 +247,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .attr("d", path);
       
     // Add blue foreground lines for focus.
-    pcforeground = svg.append("g")
+    pcforeground = pcsvg.append("g")
         .attr("class", "pcforeground")
       .selectAll("path")
         .data(data)
@@ -257,31 +260,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .data(dimensions)
       .enter().append("g")
         .attr("class", "dimension")
-        .attr("transform", function(d) { return "translate(" + pcxScale(d) + ")"; })
-        .call(d3.behavior.drag()
-          .origin(function(d) { return {x: pcxScale(d)}; })
-          .on("dragstart", function(d) {
-            pcDragging[d] = pcxScale(d);
-            pcbackground.attr("visibility", "hidden");
-          })
-          .on("drag", function(d) {
-            pcDragging[d] = Math.min(width, Math.max(0, d3.event.x));
-            pcforeground.attr("d", path);
-            dimensions.sort(function(a, b) { return position(a) - position(b); });
-            pcxScale.domain(dimensions);
-            g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
-          })
-          .on("dragend", function(d) {
-            delete pcDragging[d];
-            transition(d3.select(this)).attr("transform", "translate(" + pcxScale(d) + ")");
-            transition(pcforeground).attr("d", path);
-            pcbackground
-                .attr("d", path)
-              .transition()
-                .delay(500)
-                .duration(0)
-                .attr("visibility", null);
-          }));
+        .attr("transform", function(d) { return "translate(" + pcxScale(d) + ")"; });
           
           
     // Add an axis and title.
@@ -305,7 +284,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         
     function position(d) {
       var v = pcDragging[d];
-      console.log("position output: " + (v == null ? pcxScale(d) : v))
       return v == null ? pcxScale(d) : v;
     }
     
@@ -315,10 +293,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     
     // Returns the path for a given data point.
     function path(d) {
-      gonnaseeya = d[dimensions[0]];
-      console.log("piece that's messing up is this: " + pcyScale[dimensions[0]](d[dimensions[0]])); // is NaN
-      console.log("here's the first piece of that: " + pcyScale[dimensions[0]]); //...
-      console.log("path's input to the line: " + dimensions.map(function(p) { return [position(p), pcyScale[p](d[p])]; })); // is a number, NaN
       return pcline(dimensions.map(function(p) { return [position(p), pcyScale[p](d[p])]; }));
     }
     
