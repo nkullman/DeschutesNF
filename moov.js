@@ -1,3 +1,5 @@
+var gonnaseeya;
+
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
@@ -153,7 +155,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
-  /*drawDrilldown(drilldownTypeSelector);*/
+  drawDrilldown(drilldownTypeSelector);
       
  function updateYAxis(){
    // update what the variable encoded is
@@ -200,6 +202,140 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     else {
       drawAboutPage();
     }*/
+  }
+  
+  function drawParallelCoordsPlot(){
+    var pcmargin = {top: 30, right: 10, bottom: 10, left: 10},
+    pcwidth = 960 - pcmargin.left - pcmargin.right,
+    pcheight = 500 - pcmargin.top - pcmargin.bottom;
+
+    var pcxScale = d3.scale.ordinal().rangePoints([0, width], 1),
+        pcyScale = {},
+        pcDragging = {};
+    
+    var pcline = d3.svg.line(),
+        pcaxis = d3.svg.axis().orient("left"),
+        pcbackground,
+        pcforeground,
+        dimensions;
+        
+    var pcsvg = d3.select(".drilldownDiv").append("svg")
+        .attr('id',"pcSVG")
+        .attr('viewBox', "0 0 " + (pcwidth + pcmargin.right + pcmargin.left) + " " + (pcheight + pcmargin.top + pcmargin.bottom))
+        .attr('preserveAspectRatio',"xMinYMin meet")
+      .append("g")
+        .attr("transform", "translate(" + pcmargin.left + "," + pcmargin.top + ")");
+        
+    // Extract the list of dimensions and create a scale for each.
+    pcxScale.domain(dimensions = objectives.filter(function(d) {
+      return (pcyScale[d] = d3.scale.linear()
+          .domain(d3.extent(data, function(p) { return +p[d]; }))
+          .range([height, 0]));
+    }));
+    
+    console.log(pcyScale);
+    
+    // Add grey background lines for context.
+    pcbackground = pcsvg.append("g")
+        .attr("class", "pcbackground")
+      .selectAll("path")
+        .data(data)
+      .enter().append("path")
+        .attr("d", path);
+      
+    // Add blue foreground lines for focus.
+    pcforeground = svg.append("g")
+        .attr("class", "pcforeground")
+      .selectAll("path")
+        .data(data)
+      .enter().append("path")
+        .attr("d", path);
+    
+    
+    // Add a group element for each dimension.
+    var pcg = pcsvg.selectAll(".dimension")
+        .data(dimensions)
+      .enter().append("g")
+        .attr("class", "dimension")
+        .attr("transform", function(d) { return "translate(" + pcxScale(d) + ")"; })
+        .call(d3.behavior.drag()
+          .origin(function(d) { return {x: pcxScale(d)}; })
+          .on("dragstart", function(d) {
+            pcDragging[d] = pcxScale(d);
+            pcbackground.attr("visibility", "hidden");
+          })
+          .on("drag", function(d) {
+            pcDragging[d] = Math.min(width, Math.max(0, d3.event.x));
+            pcforeground.attr("d", path);
+            dimensions.sort(function(a, b) { return position(a) - position(b); });
+            pcxScale.domain(dimensions);
+            g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+          })
+          .on("dragend", function(d) {
+            delete pcDragging[d];
+            transition(d3.select(this)).attr("transform", "translate(" + pcxScale(d) + ")");
+            transition(pcforeground).attr("d", path);
+            pcbackground
+                .attr("d", path)
+              .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
+          }));
+          
+          
+    // Add an axis and title.
+    pcg.append("g")
+        .attr("class", "axis")
+        .each(function(d) { d3.select(this).call(pcaxis.scale(pcyScale[d])); })
+      .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function(d) { return d; });
+  
+    // Add and store a brush for each axis.
+    pcg.append("g")
+        .attr("class", "brush")
+        .each(function(d) {
+          d3.select(this).call(pcyScale[d].brush = d3.svg.brush().y(pcyScale[d]).on("brushstart", brushstart).on("brush", brush));
+        })
+      .selectAll("rect")
+        .attr("x", -8)
+        .attr("width", 16);
+        
+    function position(d) {
+      var v = pcDragging[d];
+      console.log("position output: " + (v == null ? pcxScale(d) : v))
+      return v == null ? pcxScale(d) : v;
+    }
+    
+    function transition(g) {
+      return g.transition().duration(500);
+    }
+    
+    // Returns the path for a given data point.
+    function path(d) {
+      gonnaseeya = d[dimensions[0]];
+      console.log("piece that's messing up is this: " + pcyScale[dimensions[0]](d[dimensions[0]])); // is NaN
+      console.log("here's the first piece of that: " + pcyScale[dimensions[0]]); //...
+      console.log("path's input to the line: " + dimensions.map(function(p) { return [position(p), pcyScale[p](d[p])]; })); // is a number, NaN
+      return pcline(dimensions.map(function(p) { return [position(p), pcyScale[p](d[p])]; }));
+    }
+    
+    function brushstart() {
+      d3.event.sourceEvent.stopPropagation();
+    }
+    
+    // Handles a brush event, toggling the display of foreground lines.
+    function brush() {
+      var actives = dimensions.filter(function(p) { return !pcyScale[p].brush.empty(); }),
+          extents = actives.map(function(p) { return pcyScale[p].brush.extent(); });
+      pcforeground.style("display", function(d) {
+        return actives.every(function(p, i) {
+          return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+        }) ? null : "none";
+      });
+    }
   }
 
 });
