@@ -18,12 +18,6 @@ var yAxis = d3.svg.axis()
     .scale(yScale)
     .orient("left");
     
-var zoom = d3.behavior.zoom()
-    .x(xScale)
-    .y(yScale)
-    .scaleExtent([1,100])
-    .on("zoom", zoomed);
-    
 var xVar,
     yVar,
     scatterPlotCols,
@@ -47,22 +41,29 @@ var tip = d3.tip()
   })
 	
 var svg = d3.select(".scatterplotDiv").append("svg")
+    .attr('id',"scatterPlotSVG")
     .attr('viewBox', "0 0 " + (width + margin.right + margin.left) + " " + (height + margin.top + margin.bottom))
     .attr('preserveAspectRatio',"xMinYMin meet")
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-    .call(zoom);
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
-svg.call(tip);
-
-function zoomed() {
-  console.log("the zoomed function has been called")
-  svg.select(".x.axis").call(xAxis);
-  svg.select(".y.axis").call(yAxis);
-}
+d3.select("#scatterPlotSVG").call(tip);
     
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
+  
+  /*var zoomListener = d3.behavior.zoom()
+    .scaleExtent([1,10])
+    .on("zoom", zoomHandler);
+    
+  function zoomHandler() {
+    // update axes
+    svg.select(".x.axis").call(xAxis);
+    svg.select(".y.axis").call(yAxis);
+    // update points
+    d3.selectAll(".dot")
+      .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  }*/
   
   scatterPlotCols = Object.keys(data[0]);
   objectives = [];
@@ -91,6 +92,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
   xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
   yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
+  /*d3.select("#scatterPlotSVG").call(zoomListener.x(xScale).y(yScale));*/
 
   svg.append("g")
       .attr("class", "x axis")
@@ -151,7 +153,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
-  drawDrilldown(drilldownTypeSelector);
+  /*drawDrilldown(drilldownTypeSelector);*/
       
  function updateYAxis(){
    // update what the variable encoded is
@@ -185,7 +187,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     d3.select(this).classed("selected", !d3.select(this).classed("selected"))
   }
   
-  function drawDrilldown(drilldownTypeSelector){
+  /*function drawDrilldown(drilldownTypeSelector){
     if (drilldownTypeSelector === 0){
       drawParallelCoordsPlot();
     }
@@ -198,6 +200,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     else {
       drawAboutPage();
     }
-  }
+  }*/
 
 });
