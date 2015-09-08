@@ -1,0 +1,140 @@
+html,body {
+    height:100%;
+}
+
+.container-fluid {
+	min-height:100%;
+	position:relative;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+}
+
+main {
+    padding: 10px;
+    line-height: 1.5em;
+    font-size: 0.9em;
+    width: 95%;
+    margin: 0 auto;
+    padding-bottom: 55px;
+}
+
+.studyTitle {
+    width: 60%;
+    text-align: center;
+}
+/* Protein navigation/selection area styling */
+.scatterplot-area-wrap{
+    width: 100%;
+    display: block;
+}
+.scatterplot-wrap{
+    max-height: 100%;
+    border: none;
+}
+
+.drilldownDiv,
+.scatterplotDiv{
+    width: 75%;
+    display: block;
+    padding: 0;
+    margin: 0 auto;
+    text-align: center;
+    padding-bottom: 20px;
+}
+fieldset{
+    border: none;
+}
+
+footer{
+    background-color: #F8F8F8;
+    width:100%;
+    height: 55px;
+	position:absolute;
+	bottom:0;
+	left:0;
+    line-height: 1.5em;
+    font-size: 0.9em;
+}
+
+footer ul{
+    color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+footer ul li {
+    display: inline-block;
+    padding: 10px;
+    padding-bottom: 0;
+}
+
+footer a{
+    text-decoration: none;
+    color: inherit;
+}
+
+/* End of styling for navigation area */
+
+/* Begin d3 styling */
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+.axis .label:hover {
+    text-decoration: underline;
+}
+
+.dot.selected {
+  opacity: 1.0;
+}
+
+/* End d3 styling */
+
+/* Begin styling for tooltip */
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+/* End styling for tooltip */
+
+/* Drilldown stats area styling */
+
+/* End styling for drilldown. */
