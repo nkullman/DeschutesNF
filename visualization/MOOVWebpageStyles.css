@@ -37,6 +37,7 @@ main {
     border: none;
 }
 
+.drilldownDiv,
 .scatterplotDiv{
     width: 75%;
     display: block;

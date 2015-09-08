@@ -18,11 +18,19 @@ var yAxis = d3.svg.axis()
     .scale(yScale)
     .orient("left");
     
+var zoom = d3.behavior.zoom()
+    .x(xScale)
+    .y(yScale)
+    .scaleExtent([1,100])
+    .on("zoom", zoomed);
+    
 var xVar,
     yVar,
     scatterPlotCols,
     objectives,
     numObjectives;
+    
+var drilldownTypeSelector = 0;
     
 var tip = d3.tip()
   .attr('class', 'd3-tip')
@@ -42,9 +50,16 @@ var svg = d3.select(".scatterplotDiv").append("svg")
     .attr('viewBox', "0 0 " + (width + margin.right + margin.left) + " " + (height + margin.top + margin.bottom))
     .attr('preserveAspectRatio',"xMinYMin meet")
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .call(zoom);
     
 svg.call(tip);
+
+function zoomed() {
+  console.log("the zoomed function has been called")
+  svg.select(".x.axis").call(xAxis);
+  svg.select(".y.axis").call(yAxis);
+}
     
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
@@ -136,6 +151,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
+  drawDrilldown(drilldownTypeSelector);
+      
  function updateYAxis(){
    // update what the variable encoded is
     yVarCtr++;
@@ -166,6 +183,21 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   
   function toggleSelected(){
     d3.select(this).classed("selected", !d3.select(this).classed("selected"))
+  }
+  
+  function drawDrilldown(drilldownTypeSelector){
+    if (drilldownTypeSelector === 0){
+      drawParallelCoordsPlot();
+    }
+    else if (drilldownTypeSelector === 1){
+      drawMap();
+    }
+    else if (drilldownTypeSelector === 2){
+      drawTable();
+    }
+    else {
+      drawAboutPage();
+    }
   }
 
 });
