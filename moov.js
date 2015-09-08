@@ -131,8 +131,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
-      .style("fill", function(d) { return colorScale(d.Frontier); })
-      .style("opacity", 0.6);
+      .attr("fill", function(d) { return colorScale(d.Frontier); })
+      .attr("opacity", 0.6);
 
   var legend = svg.selectAll(".legend")
       .data(colorScale.domain())
@@ -144,7 +144,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("x", width - 18)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill", colorScale);
+      .attr("fill", colorScale);
 
   legend.append("text")
       .attr("x", width - 24)
@@ -170,7 +170,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   
   function updateXAxis(){
-   // update what the variable encoded is
+   // update which variable is encoded
     xVarCtr++;
     xVar = updateVar(xVarCtr);
     // update the scale
@@ -187,11 +187,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     d3.select(this).classed("selected", !d3.select(this).classed("selected"))
   }
   
-  /*function drawDrilldown(drilldownTypeSelector){
+  function drawDrilldown(drilldownTypeSelector){
     if (drilldownTypeSelector === 0){
       drawParallelCoordsPlot();
     }
-    else if (drilldownTypeSelector === 1){
+    /*else if (drilldownTypeSelector === 1){
       drawMap();
     }
     else if (drilldownTypeSelector === 2){
@@ -199,7 +199,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     }
     else {
       drawAboutPage();
-    }
-  }*/
+    }*/
+  }
 
 });
