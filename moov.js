@@ -33,7 +33,7 @@ var tip = d3.tip()
   .html(function(d) {
     var result = "";
     for (var col in scatterPlotCols){
-      if (col !== "SolutionIndex"){
+      if (col !== "SolutionIndex" && col !== "UniqueID"){
         result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + d[scatterPlotCols[col]] + "</span>"
         if (col !== scatterPlotCols.length - 1) { result += "<br>";}
       };
@@ -90,6 +90,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         d[key] = +d[key];
       }
     }
+    d["UniqueID"] = d["Frontier"] + "-" + d["SolutionIndex"];
   });
 
   xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
@@ -129,7 +130,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .classed("selected", false)
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide)
-      .on("click", toggleSelected)
+      .on("click", function(d){
+        toggleSelected;
+        console.log(d);
+      })
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
