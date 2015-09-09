@@ -197,6 +197,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       drilldownTypeSelector = 0;
       drawDrilldown(drilldownTypeSelector);
     })
+  d3.select("#drawTableButton")
+    .on("click", function(){
+      drilldownTypeSelector = 2;
+      drawDrilldown(drilldownTypeSelector);
+    })
       
  function updateYAxis(){
    // update what the variable encoded is
@@ -237,11 +242,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     }
     /*else if (drilldownTypeSelector === 1){
       drawMap();
-    }
+    }*/
     else if (drilldownTypeSelector === 2){
       drawTable();
     }
-    else {
+    /*else {
       drawAboutPage();
     }*/
   }
@@ -343,6 +348,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       });
       pcforeground.attr()
     }
+  }
+  
+  function drawTable(){
+    d3.select(".drilldownDiv").append("table")
   }
 
 });
