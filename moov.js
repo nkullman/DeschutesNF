@@ -272,6 +272,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .data(data)
       .enter().append("path")
         .attr("id", function(d){ return "path-" + d.UniqueID; })
+        .style("stroke", function(d) { return colorScale(d.Frontier); })
+        .style("fill", "none")
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
         .on("click", function(d){

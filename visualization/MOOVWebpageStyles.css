@@ -105,11 +105,6 @@ path .selected{
   stroke-width: 1.5px;
 }
 
-.pcforeground path {
-  fill: none;
-  stroke: steelblue;
-}
-
 .extent {
   fill: #000;
   fill-opacity: .125;
