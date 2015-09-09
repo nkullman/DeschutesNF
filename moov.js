@@ -134,7 +134,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
       .attr("fill", function(d) { return colorScale(d.Frontier); })
-      .attr("opacity", 0.6);
+      .attr("opacity", 0.4)
+      .style("cursor","pointer");
 
   var legend = svg.selectAll(".legend")
       .data(colorScale.domain())
@@ -254,7 +255,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .enter().append("path")
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
-        .attr("d", path);
+        .on("click", toggleSelected)
+        .attr("d", path)
+        .attr("opacity", 0.4)
+        .style("cursor", "pointer");
     
     
     // Add a group element for each dimension.
