@@ -98,18 +98,11 @@ footer a{
     text-decoration: underline;
 }
 
-.dot.selected {
+.selected {
   opacity: 1.0;
 }
-
-circle.hidden {
-  fill: #ccc !important;
-}
-
-.pcbackground path {
-  fill: none;
-  stroke: #ddd;
-  shape-rendering: crispEdges;
+path .selected{
+  stroke-width: 1.5px;
 }
 
 .pcforeground path {
