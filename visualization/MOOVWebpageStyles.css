@@ -102,6 +102,10 @@ footer a{
   opacity: 1.0;
 }
 
+circle.hidden {
+  fill: #ccc !important;
+}
+
 .pcbackground path {
   fill: none;
   stroke: #ddd;
@@ -113,8 +117,9 @@ footer a{
   stroke: steelblue;
 }
 
-.brush .extent {
-  fill-opacity: .3;
+.extent {
+  fill: #000;
+  fill-opacity: .125;
   stroke: #fff;
   shape-rendering: crispEdges;
 }

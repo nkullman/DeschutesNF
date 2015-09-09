@@ -25,6 +25,7 @@ var xVar,
     numObjectives;
     
 var drilldownTypeSelector = 0;
+var selected_solutions = [];
     
 var tip = d3.tip()
   .attr('class', 'd3-tip')
@@ -52,6 +53,15 @@ d3.select("#scatterPlotSVG").call(tip);
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
   
+  /** Scatterplot's Brush */
+  var spbrush = d3.svg.brush()
+    .x(xScale)
+    .y(yScale)
+    //.on("brushstart", spbrushstart)
+    .on("brush", spbrushmove)
+    .on("brushend", spbrushend);
+    
+  /** Scatterplot's zoom */
   /*var zoomListener = d3.behavior.zoom()
     .scaleExtent([1,10])
     .on("zoom", zoomHandler);
@@ -153,6 +163,33 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
+  d3.select("#scatterPlotSVG").call(spbrush);
+  
+  // FIX - DOESN'T WORK
+  // Clear active brushes in the parallel coordinates plot
+  /*function spbrushstart() {
+    if (drilldownTypeSelector === 1) {
+      d3.selectAll(".drilldownDiv .brush").forEach(function(d){
+        var thisbrush = this.brush;
+        thisbrush.call(thisbrush.clear())
+      });
+    }
+  }*/
+  
+  // Highlight the selected circles.
+  function spbrushmove() {
+    console.log(spbrush.extent());
+   /* var e = spbrush.extent();
+    svg.selectAll("circle").classed("hidden", function(d) {
+      return e[0][0] > d["cx"] || d["cx"] > e[1][0]
+          || e[0][1] > d["cy"] || d["cy"] > e[1][1];
+    });*/
+  }
+  // If the brush is empty, select all circles.
+  function spbrushend() {
+    if (spbrush.empty()) svg.selectAll(".hidden").classed("hidden", false);
+  }
+      
   drawDrilldown(drilldownTypeSelector);
   
   d3.select("#makeParallelCoordsButton")
@@ -220,7 +257,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     
     var pcline = d3.svg.line(),
         pcaxis = d3.svg.axis().orient("left"),
-        pcbackground,
         pcforeground,
         dimensions;
         
@@ -231,20 +267,14 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .append("g")
         .attr("transform", "translate(" + pcmargin.left + "," + pcmargin.top + ")");
         
+    pcsvg.call(tip);
+        
     // Extract the list of dimensions and create a scale for each.
     pcxScale.domain(dimensions = objectives.filter(function(d) {
       return (pcyScale[d] = d3.scale.linear()
           .domain(d3.extent(data, function(p) { return +p[d]; }))
           .range([height, 0]));
     }));
-    
-    // Add grey background lines for context.
-    pcbackground = pcsvg.append("g")
-        .attr("class", "pcbackground")
-      .selectAll("path")
-        .data(data)
-      .enter().append("path")
-        .attr("d", path);
       
     // Add blue foreground lines for focus.
     pcforeground = pcsvg.append("g")
@@ -252,6 +282,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .selectAll("path")
         .data(data)
       .enter().append("path")
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
         .attr("d", path);
     
     
@@ -276,7 +308,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     pcg.append("g")
         .attr("class", "brush")
         .each(function(d) {
-          d3.select(this).call(pcyScale[d].brush = d3.svg.brush().y(pcyScale[d]).on("brushstart", brushstart).on("brush", brush));
+          d3.select(this).call(pcyScale[d].brush = d3.svg.brush().y(pcyScale[d]).on("brushstart", pcbrushstart).on("brush", pcbrush));
         })
       .selectAll("rect")
         .attr("x", -8)
@@ -296,12 +328,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       return pcline(dimensions.map(function(p) { return [position(p), pcyScale[p](d[p])]; }));
     }
     
-    function brushstart() {
+    function pcbrushstart() {
       d3.event.sourceEvent.stopPropagation();
     }
     
     // Handles a brush event, toggling the display of foreground lines.
-    function brush() {
+    function pcbrush() {
       var actives = dimensions.filter(function(p) { return !pcyScale[p].brush.empty(); }),
           extents = actives.map(function(p) { return pcyScale[p].brush.extent(); });
       pcforeground.style("display", function(d) {
@@ -309,6 +341,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
           return extents[i][0] <= d[p] && d[p] <= extents[i][1];
         }) ? null : "none";
       });
+      pcforeground.attr()
     }
   }
 
