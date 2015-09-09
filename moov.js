@@ -127,11 +127,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .data(data)
     .enter().append("circle")
       .attr("class", "dot")
+      .attr("id", function(d){ return "dot-" + d.UniqueID; })
       .classed("selected", false)
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide)
       .on("click", function(d){
-        toggleSelected(d3.select(this), d);
+        toggleSelected(d);
       })
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
@@ -200,11 +201,22 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("cx", function(d) {return xScale(d[xVar])});
   }
   
-  function toggleSelected(graphObj, graphObjData){
-    graphObj.classed("selected", !graphObj.classed("selected"))
-    var idxOfObjID = selected_solutions.indexOf(graphObjData.UniqueID); 
-    if (idxOfObjID > -1){ selected_solutions.splice(idxOfObjID,1); }
-    else { selected_solutions.push(graphObjData.UniqueID); }
+  function toggleSelected(graphObjData){
+    var uniqueid = graphObjData.UniqueID;
+    // get graph objects corresponding to this solution
+    var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid);
+    var idxOfObjID = selected_solutions.indexOf(uniqueid);
+    if (idxOfObjID > -1){
+      // already in solutions, so we remove it
+      selected_solutions.splice(idxOfObjID,1);
+      // unclass the graph objects
+      graphObjs.classed("selected", false);
+    } else {
+      // not in solutions, so add it
+      selected_solutions.push(uniqueid);
+      // class graph objects
+      graphObjs.classed("selected", true);
+    }
   }
   
   function drawDrilldown(drilldownTypeSelector){
@@ -259,10 +271,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .selectAll("path")
         .data(data)
       .enter().append("path")
+        .attr("id", function(d){ return "path-" + d.UniqueID; })
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
         .on("click", function(d){
-          toggleSelected(d3.select(this), d);
+          toggleSelected(d);
         })
         .attr("d", path)
         .attr("opacity", 0.4)
@@ -325,6 +338,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       });
       pcforeground.attr()
     }
+    
+    // Ensure proper classing of paths
+    selected_solutions.forEach(function(d,i){
+      d3.select("#path-"+d).classed("selected",true)
+    })
+    
   }
   
   function drawTable(){
