@@ -131,8 +131,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide)
       .on("click", function(d){
-        toggleSelected;
-        console.log(d);
+        toggleSelected(d3.select(this), d);
       })
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
@@ -201,8 +200,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("cx", function(d) {return xScale(d[xVar])});
   }
   
-  function toggleSelected(){
-    d3.select(this).classed("selected", !d3.select(this).classed("selected"))
+  function toggleSelected(graphObj, graphObjData){
+    graphObj.classed("selected", !graphObj.classed("selected"))
+    var idxOfObjID = selected_solutions.indexOf(graphObjData.UniqueID); 
+    if (idxOfObjID > -1){ selected_solutions.splice(idxOfObjID,1); }
+    else { selected_solutions.push(graphObjData.UniqueID); }
   }
   
   function drawDrilldown(drilldownTypeSelector){
@@ -259,7 +261,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .enter().append("path")
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
-        .on("click", toggleSelected)
+        .on("click", function(d){
+          toggleSelected(d3.select(this), d);
+        })
         .attr("d", path)
         .attr("opacity", 0.4)
         .style("cursor", "pointer");
