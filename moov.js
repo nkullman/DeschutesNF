@@ -52,14 +52,6 @@ d3.select("#scatterPlotSVG").call(tip);
     
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
-  
-  /** Scatterplot's Brush */
-  var spbrush = d3.svg.brush()
-    .x(xScale)
-    .y(yScale)
-    //.on("brushstart", spbrushstart)
-    .on("brush", spbrushmove)
-    .on("brushend", spbrushend);
     
   /** Scatterplot's zoom */
   /*var zoomListener = d3.behavior.zoom()
@@ -162,34 +154,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text(function(d) { return d; });
-      
-  d3.select("#scatterPlotSVG").call(spbrush);
-  
-  // FIX - DOESN'T WORK
-  // Clear active brushes in the parallel coordinates plot
-  /*function spbrushstart() {
-    if (drilldownTypeSelector === 1) {
-      d3.selectAll(".drilldownDiv .brush").forEach(function(d){
-        var thisbrush = this.brush;
-        thisbrush.call(thisbrush.clear())
-      });
-    }
-  }*/
-  
-  // Highlight the selected circles.
-  function spbrushmove() {
-    console.log(spbrush.extent());
-   /* var e = spbrush.extent();
-    svg.selectAll("circle").classed("hidden", function(d) {
-      return e[0][0] > d["cx"] || d["cx"] > e[1][0]
-          || e[0][1] > d["cy"] || d["cy"] > e[1][1];
-    });*/
-  }
-  // If the brush is empty, select all circles.
-  function spbrushend() {
-    if (spbrush.empty()) svg.selectAll(".hidden").classed("hidden", false);
-  }
-      
+       
   drawDrilldown(drilldownTypeSelector);
   
   d3.select("#makeParallelCoordsButton")
