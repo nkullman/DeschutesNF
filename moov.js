@@ -1,6 +1,6 @@
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 	
 var xScale = d3.scale.linear()
     .range([0, width]);
@@ -26,6 +26,7 @@ var xVar,
     
 var drilldownTypeSelector = 0;
 var selected_solutions = [];
+var sortType = [];
     
 var tip = d3.tip()
   .attr('class', 'd3-tip')
@@ -68,6 +69,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }*/
   
   scatterPlotCols = Object.keys(data[0]);
+  scatterPlotCols.forEach(function(){sortType.push(1);})
   objectives = [];
   scatterPlotCols.forEach(function(d){
     if (d !== "Frontier" && d !== "SolutionIndex"){
@@ -224,6 +226,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       // class graph objects
       graphObjs.classed("selected", true);
     }
+    updateTable(selected_solutions);
   }
   
   function drawDrilldown(drilldownTypeSelector){
@@ -244,8 +247,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   
   function drawParallelCoordsPlot(){
     var pcmargin = {top: 30, right: 10, bottom: 10, left: 10},
-    pcwidth = 960 - pcmargin.left - pcmargin.right,
-    pcheight = 500 - pcmargin.top - pcmargin.bottom;
+    pcwidth = 800 - pcmargin.left - pcmargin.right,
+    pcheight = 400 - pcmargin.top - pcmargin.bottom;
 
     var pcxScale = d3.scale.ordinal().rangePoints([0, width], 1),
         pcyScale = {},
@@ -280,7 +283,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .enter().append("path")
         .attr("class","pcforegroundPath")
         .attr("id", function(d){ return "path-" + d.UniqueID; })
-        .style("stroke", function(d) { return colorScale(d.Frontier); })
+        .attr("stroke", function(d) { return colorScale(d.Frontier); })
         .style("fill", "none")
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
@@ -362,7 +365,141 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   
   function drawTable(){
-    d3.select(".drilldownDiv").append("table")
+    generateTable(selected_solutions);
+    updateTable(selected_solutions);
   }
+    
+    function generateTable(solutions) {
+      var table = d3.select(".drilldownDiv")
+          .append("table")
+          .attr("id","solutionTable")
+          .style("width","100%");
+      table.append("caption").text("Selected Solutions");
+          
+      var thead = table.append("thead");
+      var tbody = table.append("tbody");
+      // create table header
+      thead.append("tr")
+        .selectAll("th")
+        .data(scatterPlotCols)
+        .enter()
+        .append("th")
+          .attr("id", function (d,i) {return "tableHeader" + i;})
+          .style("cursor","pointer")
+          .on("click", function(k,i){
+            var currSortType = sortType[i];
+            sortType[i] *= -1;
+            var rowsToSort = tbody.selectAll("tr.solutionRow");
+            rowsToSort.sort(function(a,b) {
+              if (currSortType > 0) {return whichIsBigger(a[k],b[k]);}
+              else{ return -whichIsBigger(a[k],b[k]);}
+            })
+          })
+          .text(function(colName) { return colName + " ↕"; });
+          
+      // holder for table rows while selection emtpy
+      tbody.append("tr").attr("class","tempRow")
+        .append("td")
+          .attr("colspan",scatterPlotCols.length)
+          .style("text-align","center")
+          .text("Data will populate when a selection is made");
+          
+      // prepend click-to-delete area
+      table.selectAll("tr").insert("th",":first-child")
+        .on("click",function (d,i){
+          if (typeof d != 'undefined'){ clickToggleSelected(d); }
+        })
+        .text(function(d){
+          if (typeof d != 'undefined'){ return "X"; }
+          else{ return ""; }
+        });
+    
+    }
+    
+    
+    function updateTable(solutions) {
+      var workingData = data.filter(function(d){
+        return (selected_solutions.indexOf(d["UniqueID"]) > -1);
+      });
+      var table = d3.select("#solutionTable");
+      var tbody = table.select("tbody");
+        // if selection not empty...
+      if (solutions.length > 0){
+        // remove tempRow,
+        d3.select(".tempRow").remove();
+        // populate table,
+        var rows = tbody.selectAll("tr.solutionRow").data(workingData, function(d) { return d["UniqueID"];});
+        rows.enter()
+          .append("tr")
+            .attr("class","solutionRow")
+            .attr("id", function(d) {
+              return "siteRow-" + d["UniqueID"];
+            })
+            .insert("th",":first-child")
+              .attr("class","deleteTableRowTrigger")
+              .style("cursor","pointer")
+              .on("click",function (d){
+                if (typeof d != 'undefined'){ clickToggleSelected(d); }
+              })
+              .text(function(d){
+                if (typeof d != 'undefined'){ return "X"; }
+                else{ return ""; }
+              });
+        rows.exit().remove();
+        var cells = rows.selectAll("td")
+          .data(function(row){
+            return scatterPlotCols.map(function(column) {
+              return row[column];
+            })
+          })
+          .enter()
+          .append("td")
+            .text(function(d){
+              return d;
+            });
+        // sort rows first by solution index, then by frontier 
+        tbody.selectAll("tr.solutionRow")
+          .sort(function(a,b) {
+            return whichIsBigger(a["SolutionIndex"], b["SolutionIndex"]);
+          })
+          .sort(function(a,b) {
+            return whichIsBigger(a["Frontier"], b["Frontier"]);
+          });
+        
+      } else {
+        // new strategy for zero-length site selection
+        d3.select(".drilldownDiv").html("");
+        generateTable(solutions);
+      }
+    }
+  });
 
-});
+function whichIsBigger(a,b){
+  // determine the numerical value of the arguments
+  var firstNum, secondNum;
+  if (!isNaN(+a)){
+    firstNum = +a;
+  } else {
+    firstNum = +a.substring(0,a.length-1);
+  }
+  if (!isNaN(+b)){
+    secondNum = +b;
+  } else {
+    secondNum = +b.substring(0,b.length-1);
+  }
+  // arguments' numeric values stored
+  // return normal sort returns
+  if (firstNum === secondNum) {
+    // if numeric values are the same, there are three possible situations:
+    // -1: the second input is larger bc it has a later letter appended to it
+    //  1: the first input is larger bc it has a later letter appended to it
+    //  0: the inputs have the same exact value
+    if (a > b) return 1;
+    else if (a < b) return -1;
+    return 0;
+  } else {
+    // if numeric values are not the same, then we sort the larger of the numeric values
+    if (firstNum > secondNum) return 1;
+    else return -1; // (firstNum < secondNum). It is impossible to have equality here (would have been captured in outer if)
+  }
+}
