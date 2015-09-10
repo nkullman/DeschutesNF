@@ -397,14 +397,20 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .attr('id',"mapSVG")
         .attr('viewBox', "0 0 " + (mapwidth) + " " + (mapheight))
         .attr('preserveAspectRatio',"xMinYMin meet");
+        
+    var projection = d3.geo.albersUsa()
+        .scale(500)
+        .translate([mapwidth/2, mapheight/2])
+    var mapPath = d3.geo.path()
+        .projection(projection);
     
-    d3.json("visualization/data/uk.json", function(error, uk) {
+    d3.json("visualization/data/drinkboundary.json", function(error, drinkboundary) {
       if (error) return console.error(error);
-      console.log(uk);
+      console.log(drinkboundary);
       
       mapsvg.append("path")
-        .datum(topojson.feature(uk,uk.objects.subunits))
-        .attr("d", d3.geo.path().projection(d3.geo.mercator()));
+        .datum(topojson.feature(drinkboundary,drinkboundary.objects.drinkboundaryGeo))
+        .attr("d", mapPath);
     });
   }
   

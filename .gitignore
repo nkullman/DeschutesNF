@@ -1,2 +1,5 @@
 # Model files
 /CPLEX/modelFiles/*.txt
+
+# GIS files
+/visualization/data/gisData/
