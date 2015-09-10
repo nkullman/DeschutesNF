@@ -132,13 +132,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide)
       .on("click", function(d){
-        toggleSelected(d);
+        clickToggleSelected(d);
       })
       .attr("r", 3.5)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
       .attr("fill", function(d) { return colorScale(d.Frontier); })
-      .attr("opacity", 0.4)
+      .attr("opacity", 0.2)
       .style("cursor","pointer");
 
   var legend = svg.selectAll(".legend")
@@ -159,7 +159,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text(function(d) { return d; });
-       
+      
   drawDrilldown(drilldownTypeSelector);
   
   d3.select("#makeParallelCoordsButton")
@@ -200,8 +200,15 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     d3.selectAll(".dot").transition()
       .attr("cx", function(d) {return xScale(d[xVar])});
   }
+  // Ensure proper classing of paths
+  function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
+    d3.selectAll(".dot,.pcforegroundPath").classed("selected",false);
+    selected_solutions.forEach(function(d,i){
+      d3.selectAll("#path-" + d + ",#dot-" + d).classed("selected",true)
+    });
+  }
   
-  function toggleSelected(graphObjData){
+  function clickToggleSelected(graphObjData){
     var uniqueid = graphObjData.UniqueID;
     // get graph objects corresponding to this solution
     var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid);
@@ -271,16 +278,17 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .selectAll("path")
         .data(data)
       .enter().append("path")
+        .attr("class","pcforegroundPath")
         .attr("id", function(d){ return "path-" + d.UniqueID; })
         .style("stroke", function(d) { return colorScale(d.Frontier); })
         .style("fill", "none")
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
         .on("click", function(d){
-          toggleSelected(d);
+          clickToggleSelected(d);
         })
         .attr("d", path)
-        .attr("opacity", 0.4)
+        .attr("opacity", 0.2)
         .style("cursor", "pointer");
     
     
@@ -311,6 +319,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .attr("x", -8)
         .attr("width", 16);
         
+    // Ensure proper classing of paths
+    updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions);
+        
     function position(d) {
       var v = pcDragging[d];
       return v == null ? pcxScale(d) : v;
@@ -329,23 +340,25 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       d3.event.sourceEvent.stopPropagation();
     }
     
+    function inPCBrushSelection(d, actives, extents) {
+      return actives.every(function(p, i) {
+          return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+      }) ? true : false;
+    }
+    
     // Handles a brush event, toggling the display of foreground lines.
     function pcbrush() {
       var actives = dimensions.filter(function(p) { return !pcyScale[p].brush.empty(); }),
           extents = actives.map(function(p) { return pcyScale[p].brush.extent(); });
-      pcforeground.style("display", function(d) {
-        return actives.every(function(p, i) {
-          return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-        }) ? null : "none";
+      selected_solutions = [];
+      d3.selectAll(".pcforegroundPath").each(function(d){
+        if (inPCBrushSelection(d,actives,extents)){
+          selected_solutions.push(d.UniqueID);
+        }
       });
-      pcforeground.attr()
+      if (actives.length === 0){ selected_solutions = []; }
+      updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions);
     }
-    
-    // Ensure proper classing of paths
-    selected_solutions.forEach(function(d,i){
-      d3.select("#path-"+d).classed("selected",true)
-    })
-    
   }
   
   function drawTable(){
