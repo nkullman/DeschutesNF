@@ -162,6 +162,21 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
+  legend.append("text")
+      .attr("transform", "translate(0," + colorScale.domain().length*20 + ")")
+      .attr("x", width - 6)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .style("text-decoration","underline")
+      .style("cursor","pointer")
+      .on("click", function(){
+        selected_solutions = [];
+        updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions);
+        drawDrilldown(drilldownTypeSelector);
+      })
+      .text("Unselect all solutions")
+      
   drawDrilldown(drilldownTypeSelector);
   
   d3.select("#makeParallelCoordsButton")
@@ -172,6 +187,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   d3.select("#drawTableButton")
     .on("click", function(){
       drilldownTypeSelector = 2;
+      drawDrilldown(drilldownTypeSelector);
+    })
+  d3.select("#aboutStudyButton")
+    .on("click", function(){
+      drilldownTypeSelector = 3;
       drawDrilldown(drilldownTypeSelector);
     })
       
@@ -240,9 +260,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     else if (drilldownTypeSelector === 2){
       drawTable();
     }
-    /*else {
+    else {
       drawAboutPage();
-    }*/
+    }
   }
   
   function drawParallelCoordsPlot(){
@@ -471,6 +491,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         d3.select(".drilldownDiv").html("");
         generateTable(solutions);
       }
+    }
+    
+    function drawAboutPage(){
+      d3.select(".drilldownDiv").html(""+
+        "<h2>About this study</h2>"+
+        "<p>The data shown are test data used to help develop this tool. For more information, contact <a href='mailto:nick.kullman@gmail.com'>Nicholas Kullman</a></p>"
+        +"");
     }
   });
 
