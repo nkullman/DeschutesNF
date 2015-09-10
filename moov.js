@@ -184,6 +184,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       drilldownTypeSelector = 0;
       drawDrilldown(drilldownTypeSelector);
     })
+  d3.select("#makeMapsButton")
+    .on("click", function(){
+      drilldownTypeSelector = 1;
+      drawDrilldown(drilldownTypeSelector);
+    })
   d3.select("#drawTableButton")
     .on("click", function(){
       drilldownTypeSelector = 2;
@@ -254,9 +259,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     if (drilldownTypeSelector === 0){
       drawParallelCoordsPlot();
     }
-    /*else if (drilldownTypeSelector === 1){
+    else if (drilldownTypeSelector === 1){
       drawMap();
-    }*/
+    }
     else if (drilldownTypeSelector === 2){
       drawTable();
     }
@@ -384,6 +389,25 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     }
   }
   
+  function drawMap(){
+    var mapwidth = 800;
+    var mapheight = 400;
+        
+    var mapsvg = d3.select(".drilldownDiv").append("svg")
+        .attr('id',"mapSVG")
+        .attr('viewBox', "0 0 " + (mapwidth) + " " + (mapheight))
+        .attr('preserveAspectRatio',"xMinYMin meet");
+    
+    d3.json("visualization/data/uk.json", function(error, uk) {
+      if (error) return console.error(error);
+      console.log(uk);
+      
+      mapsvg.append("path")
+        .datum(topojson.feature(uk,uk.objects.subunits))
+        .attr("d", d3.geo.path().projection(d3.geo.mercator()));
+    });
+  }
+  
   function drawTable(){
     generateTable(selected_solutions);
     updateTable(selected_solutions);
@@ -496,7 +520,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     function drawAboutPage(){
       d3.select(".drilldownDiv").html(""+
         "<h2>About this study</h2>"+
-        "<p>The data shown are test data used to help develop this tool. For more information, contact <a href='mailto:nick.kullman@gmail.com'>Nicholas Kullman</a></p>"
+        "<p>Normally shown would be a description of the problem. The data currently shown are test data used to help develop this tool.</p>"+
+        "<p>For more information, contact <a href='mailto:nick.kullman@gmail.com'>Nicholas Kullman</a></p>"
         +"");
     }
   });
