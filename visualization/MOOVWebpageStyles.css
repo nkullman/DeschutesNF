@@ -36,6 +36,9 @@ main {
     max-height: 100%;
     border: none;
 }
+.inactiveScatterPlot{
+  display: none;
+}
 
 .drilldownDiv,
 .scatterplotDiv{
