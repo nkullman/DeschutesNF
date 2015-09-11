@@ -183,22 +183,27 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     .on("click", function(){
       drilldownTypeSelector = 0;
       drawDrilldown(drilldownTypeSelector);
-    })
+    });
   d3.select("#makeMapsButton")
     .on("click", function(){
       drilldownTypeSelector = 1;
       drawDrilldown(drilldownTypeSelector);
-    })
+    });
   d3.select("#drawTableButton")
     .on("click", function(){
       drilldownTypeSelector = 2;
       drawDrilldown(drilldownTypeSelector);
-    })
+    });
   d3.select("#aboutStudyButton")
     .on("click", function(){
       drilldownTypeSelector = 3;
       drawDrilldown(drilldownTypeSelector);
-    })
+    });
+  d3.select("#toolHelpButton")
+    .on("click", function(){
+      drilldownTypeSelector = 4;
+      drawDrilldown(drilldownTypeSelector);
+    });
     
     /** To ensure robustness to the number of objectives,
      * breakout the functinoality that is specific to 3-dimensions */
@@ -295,8 +300,11 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     else if (drilldownTypeSelector === 2){
       drawTable();
     }
-    else {
+    else if (drilldownTypeSelector === 3){
       drawAboutPage();
+    }
+    else {
+      drawHelpPage();
     }
   }
   
@@ -553,12 +561,33 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     }
     
     function drawAboutPage(){
-      d3.select(".drilldownDiv").html(""+
-        "<h2>About this study</h2>"+
-        "<p>Normally shown would be a description of the problem. The data currently shown are test data used to help develop this tool.</p>"+
-        "<p>For more information, contact <a href='mailto:nick.kullman@gmail.com'>Nicholas Kullman</a></p>"
+      d3.select(".drilldownDiv").append("div")
+        .attr("class","drilldownTextContainer")
+        .html(""+
+          "<h2>About this study</h2>"+
+          "<p>Normally shown would be a description of the problem. The data currently shown are test data used to help develop this tool.</p>"+
+          "<p>For more information, contact <a href='mailto:nick.kullman@gmail.com'>Nicholas Kullman</a></p>"
         +"");
     }
+    
+    function drawHelpPage(){
+      d3.select(".drilldownDiv").append("div")
+        .attr("class","drilldownTextContainer")
+        .html(""+
+          "<h2>How to use this tool</h2>"+
+          "<p>The point of the tool is to allow the comparison of solutions to multi-objective optimization problems.</p>"+
+          "<p>Solutions can be selected in a couple of different ways:"+
+            "<ul>"+
+              "<li>By clicking on a point in the 2D or 3D scatterplots (3D only available if problem has 3 objectives)</li>"+
+              "<li>By clicking and dragging (brushing) along one of the axes in the parallel coordinates plot</li>"+
+            "</ul></p>"+
+          "<p>Solutions may be deselected similarly, and also by clicking on the 'X' in the solutions' row in the table.</p>"+
+          "<p>Click the axis labels on the 2D scatter plot to change the objective encoded on the axis.</p>"+
+          "<p>Use the 'Toggle 2D/3D' button to view a 3D scatter plot (only available if the number of objectives is 3).</p>"+
+          "<p>Use the other buttons to change chart type. Please note that this tool, especially the 'Maps' page, is still under construction.</p>"
+        );
+    }
+    
   });
 
 function whichIsBigger(a,b){

@@ -153,6 +153,11 @@ path .selected{
 }
 /* End styling for tooltip */
 
-/* Drilldown stats area styling */
+/* Drilldown area styling */
+
+.drilldownTextContainer{
+  font-size: 1.5em;
+  text-align: left;
+}
 
 /* End styling for drilldown. */
