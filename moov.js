@@ -162,7 +162,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
-  legend.append("text")
+  d3.select(".legend").append("text")
       .attr("transform", "translate(0," + colorScale.domain().length*20 + ")")
       .attr("x", width - 6)
       .attr("y", 9)
@@ -199,6 +199,36 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       drilldownTypeSelector = 3;
       drawDrilldown(drilldownTypeSelector);
     })
+    
+    /** To ensure robustness to the number of objectives,
+     * breakout the functinoality that is specific to 3-dimensions */
+    if (objectives.length === 3){
+      // add div to hold 3D scatter plot
+      d3.select(".scatterplot-wrap").insert("div",":first-child")
+        .attr("id", "threeDScatterDiv")
+        .attr("class", "inactiveScatterPlot");
+      // make dimension-toggle button
+      d3.select(".scatterplot-wrap").insert("button",":first-child")
+        .attr("id","toggle2D3D")
+        .on("click", function(){
+          d3.select("#scatterplotDiv").classed("inactiveScatterPlot",!d3.select("#scatterplotDiv").classed("inactiveScatterPlot"));
+          d3.select("#threeDScatterDiv").classed("inactiveScatterPlot",!d3.select("#threeDScatterDiv").classed("inactiveScatterPlot"));
+        })
+        .text("Toggle 2D/3D")
+      // draw the 3D scatterplot
+      make3DScatterPlot(data);
+      // enable on-click selection of points
+      d3.selectAll(".threeDpoint")
+        .on("click", function(){
+          var objData = {},
+              objId = this.id;
+          objData.UniqueID = objId.substring(objId.indexOf("-") + 1, objId.lengh)
+          clickToggleSelected(objData);
+        });
+      // ensure proper classing of selected points
+      updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
+    }
+
       
  function updateYAxis(){
    // update what the variable encoded is
@@ -229,16 +259,16 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   // Ensure proper classing of paths
   function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
-    d3.selectAll(".dot,.pcforegroundPath").classed("selected",false);
+    d3.selectAll(".dot,.pcforegroundPath,.threeDpoint").classed("selected",false);
     selected_solutions.forEach(function(d,i){
-      d3.selectAll("#path-" + d + ",#dot-" + d).classed("selected",true)
+      d3.selectAll("#path-" + d + ",#dot-" + d + ",#threeDpoint-" + d).classed("selected",true)
     });
   }
   
   function clickToggleSelected(graphObjData){
     var uniqueid = graphObjData.UniqueID;
     // get graph objects corresponding to this solution
-    var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid);
+    var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid + ",#threeDpoint-" + uniqueid);
     var idxOfObjID = selected_solutions.indexOf(uniqueid);
     if (idxOfObjID > -1){
       // already in solutions, so we remove it
@@ -406,7 +436,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     
     d3.json("visualization/data/drinkboundary.json", function(error, drinkboundary) {
       if (error) return console.error(error);
-      console.log(drinkboundary);
       
       mapsvg.append("path")
         .datum(topojson.feature(drinkboundary,drinkboundary.objects.drinkboundaryGeo))
@@ -560,4 +589,136 @@ function whichIsBigger(a,b){
     if (firstNum > secondNum) return 1;
     else return -1; // (firstNum < secondNum). It is impossible to have equality here (would have been captured in outer if)
   }
+}
+
+function make3DScatterPlot(data){
+  var scatterSeries = [];
+  var frontiers = data.map(function(d){return d["Frontier"];}).filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+  frontiers.forEach(function(d){
+    var currSeries = {};
+    var workingData = data.filter(function(row){return row["Frontier"] === d;});
+    currSeries.name = d;
+    currSeries.color = colorScale(d);
+    // format: [[x,y,z],[x,y,z],[x,y,z],[x,y,z],...]
+    //currSeries.data = workingData.map(function(row){return [row[objectives[0]], row[objectives[1]], row[objectives[2]]]});
+    // format: [{x,y,z,name},{x,y,z,name},{x,y,z,name}]
+    currSeries.data = workingData.map(function(row){
+      var result = {};
+      result.x = row[objectives[0]];
+      result.y = row[objectives[1]];
+      result.z = row[objectives[2]];
+      result.name = row["UniqueID"];
+      return result;})
+    // add it to the scatterSeries array
+    scatterSeries.push(currSeries);
+  });
+      
+    $(function () {
+  
+      // Set up the chart
+      var chart = new Highcharts.Chart({
+          chart: {
+              renderTo: 'threeDScatterDiv',
+              margin: 100,
+              type: 'scatter',
+              options3d: {
+                  enabled: true,
+                  alpha: 10,
+                  beta: 30,
+                  depth: 250,
+                  viewDistance: 5,
+  
+                  frame: {
+                      bottom: { size: 1, color: 'rgba(0,0,0,0.02)' },
+                      back: { size: 1, color: 'rgba(0,0,0,0.04)' },
+                      side: { size: 1, color: 'rgba(0,0,0,0.06)' }
+                  }
+              }
+          },
+          title: {
+              text: ""
+          },
+          subtitle: {
+              text: 'Click and drag the plot area to rotate'
+          },
+          plotOptions: {
+              scatter: {
+                  width: 10,
+                  height: 10,
+                  depth: 10
+              },
+              series: {stickyTracking: false}
+          },
+          xAxis: {
+              min: d3.min(data, function(d) { return d[objectives[0]] }),
+              max: d3.max(data, function(d) { return d[objectives[0]] }),
+              title: {enabled: true, text: objectives[0]},
+              gridLineWidth: 1
+          },
+          yAxis: {
+              min: d3.min(data, function(d) { return d[objectives[1]] }),
+              max: d3.max(data, function(d) { return d[objectives[1]] }),
+              title: {enabled: true, text: objectives[1]},
+              gridLineWidth: 1
+          },
+          zAxis: {
+              min: d3.min(data, function(d) { return d[objectives[2]] }),
+              max: d3.max(data, function(d) { return d[objectives[2]] }),
+              title: {enabled: true, text: objectives[2]},
+              gridLineWidth: 1
+          },
+          legend: {
+              enabled: true
+          },
+          series: scatterSeries
+      });
+      
+      // assign IDs to 3D points similar to other grahpical objects
+      var threeDpoints = d3.selectAll(".highcharts-markers path")
+        .attr("id", function(){return "threeDpoint-" + this.point.name;})
+        .attr("class","threeDpoint")
+        .attr("opacity",0.4);
+      
+      // format tooltip
+      chart.tooltip.options.formatter = function() {
+        var result =
+              '<strong>Frontier</strong>: ' + this.series.name + '<br>' +
+              '<strong>' + objectives[0] + '</strong>: : ' + this.x + '<br>' +
+              '<strong>' + objectives[1] + '</strong>: : ' + this.y + '<br>' +
+              '<strong>' + objectives[2] + '</strong>: : ' + this.point.z;
+        return result;
+    }
+  
+  
+      // Add mouse events for rotation
+      $(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
+          e = chart.pointer.normalize(e);
+  
+          var posX = e.pageX,
+              posY = e.pageY,
+              alpha = chart.options.chart.options3d.alpha,
+              beta = chart.options.chart.options3d.beta,
+              newAlpha,
+              newBeta,
+              sensitivity = 5; // lower is more sensitive
+  
+          $(document).bind({
+              'mousemove.hc touchdrag.hc': function (e) {
+                  // Run beta
+                  newBeta = beta + (posX - e.pageX) / sensitivity;
+                  chart.options.chart.options3d.beta = newBeta;
+  
+                  // Run alpha
+                  newAlpha = alpha + (e.pageY - posY) / sensitivity;
+                  chart.options.chart.options3d.alpha = newAlpha;
+  
+                  chart.redraw(false);
+              },
+              'mouseup touchend': function () {
+                  $(document).unbind('.hc');
+              }
+          });
+      });
+  
+  });
 }

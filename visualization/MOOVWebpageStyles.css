@@ -2,7 +2,7 @@ html,body {
     height:100%;
 }
 
-.container-fluid {
+body-container {
 	min-height:100%;
 	position:relative;
 }
@@ -36,9 +36,13 @@ main {
     max-height: 100%;
     border: none;
 }
+.inactiveScatterPlot{
+  display: none !important;
+}
 
 .drilldownDiv,
-.scatterplotDiv{
+.scatterplotDiv,
+#threeDScatterDiv{
     width: 60%;
     display: block;
     padding: 0;

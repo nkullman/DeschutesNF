@@ -8,19 +8,23 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
       <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+      <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+      <script src="http://code.highcharts.com/highcharts.js"></script>
+      <script src="http://code.highcharts.com/highcharts-3d.js"></script>
+      <script src="http://code.highcharts.com/modules/exporting.js"></script>
       <!--<script src="d3.min.js" charset="utf-8"></script>
       <script src="d3.tip.v0.6.3.js"></script>-->
-      <title>MOOV</title>
+      <title>Visualizing multi-objective optimization</title>
 </head>
 <body>
-   <div class="container-fluid"> 
+   <div class="body-container"> 
       <main>
       <div class="studyTitle">
         <h2>Comparing solutions to multi-objective optimization models</h2>
       </div> <!-- studyTitle -->
       <div class="scatterplot-area-wrap">
 		  <fieldset class="scatterplot-wrap">
-			  <div class="scatterplotDiv">
+			  <div class="scatterplotDiv" id="scatterplotDiv">
           
 			  </div> <!-- scatterplotDiv -->
 		  </fieldset> <!--scatterplot-wrap-->
@@ -40,7 +44,7 @@
                <li><a href="https://uw.edu"><img src="visualization/images/UW_Block_W_logo.png" alt="University-of-Washington" height="37px"></a></li>
             </ul>
       </footer>
-   </div> <!-- container-fluid -->
+   </div> <!-- body-container -->
    <script src="moov.js"></script>
 </body>
 </html>
