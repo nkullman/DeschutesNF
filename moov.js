@@ -204,6 +204,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       d3.select("#scatterplotDiv").classed("inactiveScatterPlot",!d3.select("#scatterplotDiv").classed("inactiveScatterPlot"));
       d3.select("#threeDScatterDiv").classed("inactiveScatterPlot",!d3.select("#threeDScatterDiv").classed("inactiveScatterPlot"));
     })
+    
+    /** Make 3D Scatter-Plot */
+    
       
  function updateYAxis(){
    // update what the variable encoded is
