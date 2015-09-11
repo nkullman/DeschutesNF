@@ -663,12 +663,10 @@ function make3DScatterPlot(data){
           series: scatterSeries
       });
       
-      // set opacity of points
-      console.log(d3.select(chart));
-      /*var threeDpoints = d3.selectAll(".highcharts-markers path")
-        .attr("opacity",function(d){
-          if (selected_solutions.indexOf(d))
-        })*/
+      // assign IDs to 3D points similar to other grahpical objects
+      var threeDpoints = d3.selectAll(".highcharts-markers path")
+        .attr("id", function(){return "threeDPoint-" + this.point.name;})
+        .attr("class","threeDpoint");
       
       // format tooltip
       chart.tooltip.options.formatter = function() {
