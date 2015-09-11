@@ -217,6 +217,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .text("Toggle 2D/3D")
       // draw the 3D scatterplot
       make3DScatterPlot(data);
+      // ensure proper classing of selected points
+      updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
     }
 
       
@@ -249,16 +251,16 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   // Ensure proper classing of paths
   function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
-    d3.selectAll(".dot,.pcforegroundPath").classed("selected",false);
+    d3.selectAll(".dot,.pcforegroundPath,.threeDpoint").classed("selected",false);
     selected_solutions.forEach(function(d,i){
-      d3.selectAll("#path-" + d + ",#dot-" + d).classed("selected",true)
+      d3.selectAll("#path-" + d + ",#dot-" + d + ",#threeDpoint-" + d).classed("selected",true)
     });
   }
   
   function clickToggleSelected(graphObjData){
     var uniqueid = graphObjData.UniqueID;
     // get graph objects corresponding to this solution
-    var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid);
+    var graphObjs = d3.selectAll("#dot-" + uniqueid + ",#path-" + uniqueid + ",#threeDpoint-" + uniqueid);
     var idxOfObjID = selected_solutions.indexOf(uniqueid);
     if (idxOfObjID > -1){
       // already in solutions, so we remove it
@@ -665,8 +667,9 @@ function make3DScatterPlot(data){
       
       // assign IDs to 3D points similar to other grahpical objects
       var threeDpoints = d3.selectAll(".highcharts-markers path")
-        .attr("id", function(){return "threeDPoint-" + this.point.name;})
-        .attr("class","threeDpoint");
+        .attr("id", function(){return "threeDpoint-" + this.point.name;})
+        .attr("class","threeDpoint")
+        .attr("opacity",0.4);
       
       // format tooltip
       chart.tooltip.options.formatter = function() {
