@@ -41,7 +41,8 @@ main {
 }
 
 .drilldownDiv,
-.scatterplotDiv{
+.scatterplotDiv,
+#threeDScatterDiv{
     width: 60%;
     display: block;
     padding: 0;
