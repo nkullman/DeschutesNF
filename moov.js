@@ -217,6 +217,14 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .text("Toggle 2D/3D")
       // draw the 3D scatterplot
       make3DScatterPlot(data);
+      // enable on-click selection of points
+      d3.selectAll(".threeDpoint")
+        .on("click", function(){
+          var objData = {},
+              objId = this.id;
+          objData.UniqueID = objId.substring(objId.indexOf("-") + 1, objId.lengh)
+          clickToggleSelected(objData);
+        });
       // ensure proper classing of selected points
       updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
     }
