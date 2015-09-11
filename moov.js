@@ -162,7 +162,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .style("text-anchor", "end")
       .text(function(d) { return d; });
       
-  legend.append("text")
+  d3.select(".legend").append("text")
       .attr("transform", "translate(0," + colorScale.domain().length*20 + ")")
       .attr("x", width - 6)
       .attr("y", 9)
@@ -586,9 +586,19 @@ function make3DScatterPlot(data){
   var frontiers = data.map(function(d){return d["Frontier"];}).filter(function(item, i, ar){ return ar.indexOf(item) === i; });
   frontiers.forEach(function(d){
     var currSeries = {};
+    var workingData = data.filter(function(row){return row["Frontier"] === d;});
     currSeries.name = d;
     currSeries.color = colorScale(d);
-    currSeries.data = data.map(function(row){return [row[objectives[0]], row[objectives[1]], row[objectives[2]]]});
+    // format: [[x,y,z],[x,y,z],[x,y,z],[x,y,z],...]
+    //currSeries.data = workingData.map(function(row){return [row[objectives[0]], row[objectives[1]], row[objectives[2]]]});
+    // format: [{x,y,z,name},{x,y,z,name},{x,y,z,name}]
+    currSeries.data = workingData.map(function(row){
+      var result = {};
+      result.x = row[objectives[0]];
+      result.y = row[objectives[1]];
+      result.z = row[objectives[2]];
+      result.name = row["UniqueID"];
+      return result;})
     // add it to the scatterSeries array
     scatterSeries.push(currSeries);
   });
@@ -626,7 +636,8 @@ function make3DScatterPlot(data){
                   width: 10,
                   height: 10,
                   depth: 10
-              }
+              },
+              series: {stickyTracking: false}
           },
           xAxis: {
               min: d3.min(data, function(d) { return d[objectives[0]] }),
@@ -652,13 +663,20 @@ function make3DScatterPlot(data){
           series: scatterSeries
       });
       
+      // set opacity of points
+      console.log(d3.select(chart));
+      /*var threeDpoints = d3.selectAll(".highcharts-markers path")
+        .attr("opacity",function(d){
+          if (selected_solutions.indexOf(d))
+        })*/
+      
       // format tooltip
       chart.tooltip.options.formatter = function() {
         var result =
               '<strong>Frontier</strong>: ' + this.series.name + '<br>' +
               '<strong>' + objectives[0] + '</strong>: : ' + this.x + '<br>' +
               '<strong>' + objectives[1] + '</strong>: : ' + this.y + '<br>' +
-              '<strong>' + objectives[2] + '</strong>: : ' + this.z + '<br>';
+              '<strong>' + objectives[2] + '</strong>: : ' + this.point.z;
         return result;
     }
   
