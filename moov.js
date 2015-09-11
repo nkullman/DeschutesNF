@@ -200,7 +200,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       drawDrilldown(drilldownTypeSelector);
     })
     
-    /** Things strictly for three dimensions */
+    /** To ensure robustness to the number of objectives,
+     * breakout the functinoality that is specific to 3-dimensions */
     if (objectives.length === 3){
       // add div to hold 3D scatter plot
       d3.select(".scatterplot-wrap").insert("div",":first-child")
@@ -581,7 +582,8 @@ function whichIsBigger(a,b){
 }
 
 function make3DScatterPlot(data){
-  console.log(d3.min(data, function(d) { return d[objectives[0]] }))
+  var scatterSeries = [],
+      frontiers = [];
     $(function () {
   
       // Set up the chart
@@ -618,19 +620,22 @@ function make3DScatterPlot(data){
               }
           },
           xAxis: {
-              min: 0,
-              max: 10,
+              min: d3.min(data, function(d) { return d[objectives[0]] }),
+              max: d3.max(data, function(d) { return d[objectives[0]] }),
+              title: {enabled: true, text: objectives[0]},
               gridLineWidth: 1
           },
           yAxis: {
-              min: -5,
-              max: 10,
-              title: {enabled: true, text: "SHOW ME"}
+              min: d3.min(data, function(d) { return d[objectives[1]] }),
+              max: d3.max(data, function(d) { return d[objectives[1]] }),
+              title: {enabled: true, text: objectives[1]},
+              gridLineWidth: 1
           },
           zAxis: {
-              min: 0,
-              max: 10,
-              showFirstLabel: true
+              min: d3.min(data, function(d) { return d[objectives[2]] }),
+              max: d3.max(data, function(d) { return d[objectives[2]] }),
+              title: {enabled: true, text: objectives[2]},
+              gridLineWidth: 1
           },
           legend: {
               enabled: true
