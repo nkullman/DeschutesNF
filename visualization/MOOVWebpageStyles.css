@@ -94,10 +94,6 @@ footer a{
   shape-rendering: crispEdges;
 }
 
-.dot {
-  stroke: #000;
-}
-
 .axis .label:hover {
     text-decoration: underline;
 }
@@ -105,7 +101,7 @@ footer a{
 .selected {
   opacity: 1.0;
 }
-path .selected{
+.drilldownDiv path .selected{
   stroke-width: 1.5px;
 }
 

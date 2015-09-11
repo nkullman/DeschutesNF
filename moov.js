@@ -23,7 +23,7 @@ var xVar,
     scatterPlotCols,
     objectives,
     numObjectives,
-    dotRadius = 3.5;
+    dotRadius = 4;
     
 var drilldownTypeSelector = 0;
 var selected_solutions = [];
@@ -295,6 +295,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       graphObjs.classed("selected", true);
     }
     updateTable(selected_solutions);
+    drawDrilldown(drilldownTypeSelector);
   }
   
   function drawDrilldown(drilldownTypeSelector){
