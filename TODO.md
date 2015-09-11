@@ -1,5 +1,8 @@
 #Short term TODO:
- - [ ] Add zooming to 2D/3D scatter plots
+ - [x] Add zooming to 2D scatter plot
+ - [x] Add zoom-reset to 2D scatter plot
+ - [ ] Bound zoom on 2D scatter plot
+ - [ ] Add zooming to 3D scatter plot
+ - [ ] Add zoom-reset to 3D scatter plot
  - [x] Eliminate same-var axis encodings on the 2D scatterplot
- - [ ] Add button to reset scatter plots after zooming/panning
  - [ ] Add map view of solutions

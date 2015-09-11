@@ -22,7 +22,8 @@ var xVar,
     yVar,
     scatterPlotCols,
     objectives,
-    numObjectives;
+    numObjectives,
+    dotRadius = 3.5;
     
 var drilldownTypeSelector = 0;
 var selected_solutions = [];
@@ -54,8 +55,8 @@ d3.select("#scatterPlotSVG").call(tip);
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
     
-  /** Scatterplot's zoom */
-  /*var zoomListener = d3.behavior.zoom()
+  /** 2D Scatterplot's zoom */
+  var zoomListener = d3.behavior.zoom()
     .scaleExtent([1,10])
     .on("zoom", zoomHandler);
     
@@ -65,8 +66,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     svg.select(".y.axis").call(yAxis);
     // update points
     d3.selectAll(".dot")
-      .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  }*/
+      .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
+      .attr("r",dotRadius/d3.event.scale);
+  }
   
   scatterPlotCols = Object.keys(data[0]);
   scatterPlotCols.forEach(function(){sortType.push(1);})
@@ -97,7 +99,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
   xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
   yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
-  /*d3.select("#scatterPlotSVG").call(zoomListener.x(xScale).y(yScale));*/
+  d3.select("#scatterPlotSVG").call(zoomListener.x(xScale).y(yScale));
 
   svg.append("g")
       .attr("class", "x axis")
@@ -136,7 +138,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .on("click", function(d){
         clickToggleSelected(d);
       })
-      .attr("r", 3.5)
+      .attr("r", dotRadius)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
       .attr("fill", function(d) { return colorScale(d.Frontier); })
@@ -176,6 +178,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         drawDrilldown(drilldownTypeSelector);
       })
       .text("Unselect all solutions")
+    d3.select("#resetZoom2DButton")
+      .on("click", function(){
+        d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
+      });
       
   drawDrilldown(drilldownTypeSelector);
   
