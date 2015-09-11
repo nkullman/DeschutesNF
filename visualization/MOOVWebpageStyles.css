@@ -37,7 +37,7 @@ main {
     border: none;
 }
 .inactiveScatterPlot{
-  display: none;
+  display: none !important;
 }
 
 .drilldownDiv,
