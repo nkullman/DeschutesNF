@@ -238,6 +238,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
  function updateYAxis(){
    // update what the variable encoded is
     yVarCtr++;
+    if (yVarCtr % numObjectives === xVarCtr % numObjectives){ yVarCtr++; }
     yVar = updateVar(yVarCtr);
     // update the scale
     yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
@@ -252,6 +253,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   function updateXAxis(){
    // update which variable is encoded
     xVarCtr++;
+    if (xVarCtr % numObjectives === yVarCtr % numObjectives){ xVarCtr++; }
     xVar = updateVar(xVarCtr);
     // update the scale
     xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
