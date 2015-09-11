@@ -61,6 +61,18 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     .on("zoom", zoomHandler);
     
   function zoomHandler() {
+    
+    var t = d3.event.translate;
+    var s = d3.event.scale;
+    // bound horizontal panning
+    if (t[0] > 0)  { t[0] = 0; }
+    if (t[0] < -(width*s - width)) { t[0] = -(width*s - width); }
+    // bound vertical panning
+    if (t[1] > 0)  { t[1] = 0; }
+    if (t[1] < -(height*s - height)) { t[1] = -(height*s - height); }
+
+    zoomListener.translate(t);
+    
     // update axes
     svg.select(".x.axis").call(xAxis);
     svg.select(".y.axis").call(yAxis);
