@@ -202,9 +202,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     
     /** Things strictly for three dimensions */
     if (objectives.length === 3){
+      // add div to hold 3D scatter plot
+      d3.select(".scatterplot-wrap").insert("div",":first-child")
+        .attr("id", "threeDScatterDiv")
+        .attr("class", "inactiveScatterPlot");
       // make dimension-toggle button
       d3.select(".scatterplot-wrap").insert("button",":first-child")
-        .attr("id","toggle2D3DBUtt")
+        .attr("id","toggle2D3D")
         .on("click", function(){
           d3.select("#scatterplotDiv").classed("inactiveScatterPlot",!d3.select("#scatterplotDiv").classed("inactiveScatterPlot"));
           d3.select("#threeDScatterDiv").classed("inactiveScatterPlot",!d3.select("#threeDScatterDiv").classed("inactiveScatterPlot"));
