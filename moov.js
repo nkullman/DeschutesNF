@@ -55,7 +55,7 @@ d3.select("#scatterPlotSVG").call(tip);
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
     
-  /** 2D Scatterplot's zoom */
+  /** 2D Scatterplot zoom */
   var zoomListener = d3.behavior.zoom()
     .scaleExtent([1,10])
     .on("zoom", zoomHandler);
@@ -649,9 +649,7 @@ function make3DScatterPlot(data){
     var workingData = data.filter(function(row){return row["Frontier"] === d;});
     currSeries.name = d;
     currSeries.color = colorScale(d);
-    // format: [[x,y,z],[x,y,z],[x,y,z],[x,y,z],...]
-    //currSeries.data = workingData.map(function(row){return [row[objectives[0]], row[objectives[1]], row[objectives[2]]]});
-    // format: [{x,y,z,name},{x,y,z,name},{x,y,z,name}]
+    // format: [{x1,y1,z1,name1},{x2,y2,z2,name2},...]
     currSeries.data = workingData.map(function(row){
       var result = {};
       result.x = row[objectives[0]];
