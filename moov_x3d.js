@@ -50,12 +50,17 @@ var svg = d3.select(".scatterplotDiv").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
+var x3d = d3.select("#threeDScatterDiv").append("x3d")
+    .attr("width",width)
+    .attr("height",height);
+var scene = x3d.append("scene");
+    
 d3.select("#scatterPlotSVG").call(tip);
     
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
     
-  /** 2D Scatterplot's zoom */
+  /** 2D Scatterplot zoom */
   var zoomListener = d3.behavior.zoom()
     .scaleExtent([1,10])
     .on("zoom", zoomHandler);
@@ -226,10 +231,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     /** To ensure robustness to the number of objectives,
      * breakout the functinoality that is specific to 3-dimensions */
     if (objectives.length === 3){
-      // add div to hold 3D scatter plot
-      d3.select(".scatterplot-wrap").insert("div",":first-child")
-        .attr("id", "threeDScatterDiv")
-        .attr("class", "inactiveScatterPlot");
       // make dimension-toggle button
       d3.select(".scatterplot-wrap").insert("button",":first-child")
         .attr("id","toggle2D3D")
@@ -240,13 +241,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .text("Toggle 2D/3D")
       // draw the 3D scatterplot
       make3DScatterPlot(data);
-      // enable on-click selection of points
+      // enable on-click selection of points -- this will have to be updated with new graphing approach
       d3.selectAll(".threeDpoint")
         .on("click", function(){
-          var objData = {},
-              objId = this.id;
-          objData.UniqueID = objId.substring(objId.indexOf("-") + 1, objId.lengh)
-          clickToggleSelected(objData);
+          clickToggleSelected(/*sth*/);
         });
       // ensure proper classing of selected points
       updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
@@ -642,130 +640,54 @@ function whichIsBigger(a,b){
 }
 
 function make3DScatterPlot(data){
-  var scatterSeries = [];
-  var frontiers = data.map(function(d){return d["Frontier"];}).filter(function(item, i, ar){ return ar.indexOf(item) === i; });
-  frontiers.forEach(function(d){
-    var currSeries = {};
-    var workingData = data.filter(function(row){return row["Frontier"] === d;});
-    currSeries.name = d;
-    currSeries.color = colorScale(d);
-    // format: [{x1,y1,z1,name1},{x2,y2,z2,name2},...]
-    currSeries.data = workingData.map(function(row){
-      var result = {};
-      result.x = row[objectives[0]];
-      result.y = row[objectives[1]];
-      result.z = row[objectives[2]];
-      result.name = row["UniqueID"];
-      return result;})
-    // add it to the scatterSeries array
-    scatterSeries.push(currSeries);
-  });
+  var cor = [d3.mean(d3.extent(data, function(d) { return d[objectives[0]]; })),
+        d3.mean(d3.extent(data, function(d) { return d[objectives[1]]; })),
+        d3.mean(d3.extent(data, function(d) { return d[objectives[2]]; }))];
+
+  /*scene.append("viewpoint")
+     .attr( "centerOfRotation", cor)
+     .attr( "orientation", [-0.5, 1, 0.2, 1.12*Math.PI/4])
+     .attr( "position", cor);*/
+     
+  /*scene.append("viewpoint")
+      .attr( "centerOfRotation", "3.75 0 10")
+      .attr( "position", "13.742265188709691 -27.453522975182366 16.816062840792625" )
+      .attr( "orientation", "0.962043810961999 0.1696342804961945 0.21376603254551874 1.379433089729343" );*/
       
-    $(function () {
-  
-      // Set up the chart
-      var chart = new Highcharts.Chart({
-          chart: {
-              renderTo: 'threeDScatterDiv',
-              margin: 100,
-              type: 'scatter',
-              options3d: {
-                  enabled: true,
-                  alpha: 10,
-                  beta: 30,
-                  depth: 250,
-                  viewDistance: 5,
-  
-                  frame: {
-                      bottom: { size: 1, color: 'rgba(0,0,0,0.02)' },
-                      back: { size: 1, color: 'rgba(0,0,0,0.04)' },
-                      side: { size: 1, color: 'rgba(0,0,0,0.06)' }
-                  }
-              }
-          },
-          title: {
-              text: ""
-          },
-          subtitle: {
-              text: 'Click and drag the plot area to rotate'
-          },
-          plotOptions: {
-              scatter: {
-                  width: 10,
-                  height: 10,
-                  depth: 10
-              },
-              series: {stickyTracking: false}
-          },
-          xAxis: {
-              min: d3.min(data, function(d) { return d[objectives[0]] }),
-              max: d3.max(data, function(d) { return d[objectives[0]] }),
-              title: {enabled: true, text: objectives[0]},
-              gridLineWidth: 1
-          },
-          yAxis: {
-              min: d3.min(data, function(d) { return d[objectives[1]] }),
-              max: d3.max(data, function(d) { return d[objectives[1]] }),
-              title: {enabled: true, text: objectives[1]},
-              gridLineWidth: 1
-          },
-          zAxis: {
-              min: d3.min(data, function(d) { return d[objectives[2]] }),
-              max: d3.max(data, function(d) { return d[objectives[2]] }),
-              title: {enabled: true, text: objectives[2]},
-              gridLineWidth: 1
-          },
-          legend: {
-              enabled: true
-          },
-          series: scatterSeries
-      });
+  var useThisData = randomData();
+  var useTheseData = data.slice(0,6);
+  useTheseData.push(data[data.length-1]);
+  console.log(useTheseData)
       
-      // assign IDs to 3D points similar to other grahpical objects
-      var threeDpoints = d3.selectAll(".highcharts-markers path")
-        .attr("id", function(){return "threeDpoint-" + this.point.name;})
-        .attr("class","threeDpoint")
-        .attr("opacity",0.4);
-      
-      // format tooltip
-      chart.tooltip.options.formatter = function() {
-        var result =
-              '<strong>Frontier</strong>: ' + this.series.name + '<br>' +
-              '<strong>' + objectives[0] + '</strong>: : ' + this.x + '<br>' +
-              '<strong>' + objectives[1] + '</strong>: : ' + this.y + '<br>' +
-              '<strong>' + objectives[2] + '</strong>: : ' + this.point.z;
-        return result;
+    refresh( useTheseData );
+     
+     function randomData() {
+       var rd = d3.range(6).map( function() { return Math.random()*20; } );
+       console.log(rd);
+        return rd;
       }
 
-      // Add mouse events for rotation
-      $(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
-          e = chart.pointer.normalize(e);
-  
-          var posX = e.pageX,
-              posY = e.pageY,
-              alpha = chart.options.chart.options3d.alpha,
-              beta = chart.options.chart.options3d.beta,
-              newAlpha,
-              newBeta,
-              sensitivity = 5; // lower is more sensitive
-  
-          $(document).bind({
-              'mousemove.hc touchdrag.hc': function (e) {
-                  // Run beta
-                  newBeta = beta + (posX - e.pageX) / sensitivity;
-                  chart.options.chart.options3d.beta = newBeta;
-  
-                  // Run alpha
-                  newAlpha = alpha + (e.pageY - posY) / sensitivity;
-                  chart.options.chart.options3d.alpha = newAlpha;
-  
-                  chart.redraw(false);
-              },
-              'mouseup touchend': function () {
-                  $(document).unbind('.hc');
-              }
-          });
-      });
-  
-  });
+      function refresh( refreshdata ) {
+        var shapes = scene.selectAll("transform").data( refreshdata );
+        var shapesEnter = shapes
+             .enter()
+             .append( "transform" )
+             .append( "shape" )
+              .attr("id", function(d) {return "threeDpoint-" + d["UniqueID"]; });
+        // Enter and update
+        shapes.transition()
+              .attr("translation", function(d,i) { return Math.log10(d[objectives[0]]) + " " + Math.log10(d[objectives[1]]) + " " + Math.log10(d[objectives[2]]); } )
+              .attr("scale", function(d) { return "1.0 1.0 1.0"; } );
+
+        shapesEnter
+            .append("appearance")
+              .append("material")
+              .attr("class", "threeDpointMaterial")
+              .attr("id", function(d) {return "threeDpointMaterial-" + d["UniqueID"]; })
+              .attr("diffuseColor", function(d){ return colorScale(d["Frontier"]); })
+              .attr("transparency", "0.6");
+
+        shapesEnter.append( "sphere" )
+          .attr( "size", "1.0 1.0 1.0" );
+      }
 }
