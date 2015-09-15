@@ -1,5 +1,5 @@
-var margin = {top: 20, right: 200, bottom: 30, left: 50},
-    width = 1000 - margin.left - margin.right,
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 	
 var xScale = d3.scale.linear()
@@ -7,8 +7,6 @@ var xScale = d3.scale.linear()
 
 var yScale = d3.scale.linear()
     .range([height, 0]);
-    
-var radiusScale = d3.scale.sqrt();
 
 var colorScale = d3.scale.category10();
 
@@ -22,16 +20,11 @@ var yAxis = d3.svg.axis()
     
 var xVar,
     yVar,
-    radiusVar,
     scatterPlotCols,
     objectives,
     numObjectives,
-    dotRadius = 4,
-    radiusScaleRange = [dotRadius,dotRadius];
+    dotRadius = 4;
     
-radiusScale.range(radiusScaleRange);
-    
-var encodeRadius = false;
 var drilldownTypeSelector = 0;
 var selected_solutions = [];
 var sortType = [];
@@ -40,11 +33,10 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    var thisdata = d[0][0]["__data__"];
     var result = "";
     for (var col in scatterPlotCols){
       if (col !== "SolutionIndex" && col !== "UniqueID"){
-        result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + thisdata[scatterPlotCols[col]] + "</span>"
+        result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + d[scatterPlotCols[col]] + "</span>"
         if (col !== scatterPlotCols.length - 1) { result += "<br>";}
       };
     }
@@ -58,12 +50,17 @@ var svg = d3.select(".scatterplotDiv").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
+var x3d = d3.select("#threeDScatterDiv").append("x3d")
+    .attr("width",width)
+    .attr("height",height);
+var scene = x3d.append("scene");
+    
 d3.select("#scatterPlotSVG").call(tip);
     
 d3.csv("visualization/data/frontiers.csv", function(error, data) {
   if (error) throw error;
     
-  /** 2D Scatterplot's zoom */
+  /** 2D Scatterplot zoom */
   var zoomListener = d3.behavior.zoom()
     .scaleExtent([1,10])
     .on("zoom", zoomHandler);
@@ -87,7 +84,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     // update points
     d3.selectAll(".dot")
       .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
-      .attr("r", function(d) {return radiusScale(d[radiusVar])/d3.event.scale});
+      .attr("r",dotRadius/d3.event.scale);
   }
   
   scatterPlotCols = Object.keys(data[0]);
@@ -103,7 +100,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       yVarCtr = 1;
   xVar = updateVar(xVarCtr);
   yVar = updateVar(yVarCtr);
-  radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
   function updateVar(varCtr){
       return objectives[varCtr % numObjectives];
   }
@@ -120,7 +116,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
   xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
   yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
-  radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice()
   d3.select("#scatterPlotSVG").call(zoomListener.x(xScale).y(yScale));
 
   svg.append("g")
@@ -155,18 +150,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("class", "dot")
       .attr("id", function(d){ return "dot-" + d.UniqueID; })
       .classed("selected", false)
-      .on('mouseover', function(){
-          d3.select(this).call(tip.show);
-          classMeAndMyBrothers(this, "active", true);
-        })
-      .on('mouseout', function(){
-          d3.select(this).call(tip.hide);
-          classMeAndMyBrothers(this, "active", false);
-        })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide)
       .on("click", function(d){
         clickToggleSelected(d);
       })
-      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();})
+      .attr("r", dotRadius)
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
       .attr("fill", function(d) { return colorScale(d.Frontier); })
@@ -180,25 +169,24 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
   legend.append("rect")
-      .attr("x", width + 24)
+      .attr("x", width - 18)
       .attr("width", 18)
       .attr("height", 18)
       .attr("fill", colorScale);
 
   legend.append("text")
-      .attr("x", width + 18)
+      .attr("x", width - 24)
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text(function(d) { return d; });
-  
-  // "Unselect all" option 
+      
   d3.select(".legend").append("text")
       .attr("transform", "translate(0," + colorScale.domain().length*20 + ")")
-      .attr("x", width)
+      .attr("x", width - 6)
       .attr("y", 9)
       .attr("dy", ".35em")
-      .style("text-anchor", "middle")
+      .style("text-anchor", "end")
       .style("text-decoration","underline")
       .style("cursor","pointer")
       .on("click", function(){
@@ -207,64 +195,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         drawDrilldown(drilldownTypeSelector);
       })
       .text("Unselect all solutions")
-  // Radius legend title
-  d3.select(".legend").append("text")
-      .attr("class","radiusLegend")
-      .attr("id", "radiusLegendTitle")
-      .attr("transform", "translate(0," + (colorScale.domain().length + 3)*20 + ")")
-      .attr("x", width)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "beginning")
-      .style("font-size", "1.5em")
-      .text("Size: " + radiusVar);
-  // values for the legend
-  var radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
-  radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
-  // build rows of legend
-  var radiusLegend = d3.select(".legend").selectAll("radiusLegendEntry").data(radiusLegendVals).enter()
-      .append("g")
-        .attr("class","radiusLegend radiusLegendEntry")
-        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 4)*20 + i*(10*radiusScale.range()[1])) + ")"; });
-  // the symbols...
-  radiusLegend.append("circle")
-      .attr("cx", width + 24 + 5*radiusScale.range()[1])
-      .attr("r", function(d){return radiusScale(d);})
-      .attr("cy","1em")
-      .attr("fill", "#7f7f7f");
-  // the text
-  radiusLegend.append("text")
-      .attr("x", width + 18)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
-  // hide if no radius encoding used
-  if(!encodeRadius) {d3.selectAll(".radiusLegend").attr("display","none");}
-      
-    // Reset the zoom in the 2D scatter plot
     d3.select("#resetZoom2DButton")
       .on("click", function(){
         d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
       });
-    // toggle the encoding of a third variable on the radius of the scatter plot dots
-    d3.select("#encode3rdVar")
-      .on("click", function(){
-        encodeRadius = !encodeRadius;
-        if (encodeRadius){
-          radiusScaleRange = [dotRadius*0.5, dotRadius*5];
-          radiusScale.range(radiusScaleRange);
-          updateRadiusLegend();
-          d3.selectAll(".radiusLegend").attr("display","default");
-        } else {
-          d3.selectAll(".radiusLegend").attr("display","none");
-          radiusScaleRange = [dotRadius, dotRadius];
-          radiusScale.range(radiusScaleRange);
-        }
-        // update the circles
-        d3.selectAll(".dot").transition()
-          .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
-      })
       
   drawDrilldown(drilldownTypeSelector);
   
@@ -297,10 +231,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     /** To ensure robustness to the number of objectives,
      * breakout the functinoality that is specific to 3-dimensions */
     if (objectives.length === 3){
-      // add div to hold 3D scatter plot
-      d3.select(".scatterplot-wrap").insert("div",":first-child")
-        .attr("id", "threeDScatterDiv")
-        .attr("class", "inactiveScatterPlot");
       // make dimension-toggle button
       d3.select(".scatterplot-wrap").insert("button",":first-child")
         .attr("id","toggle2D3D")
@@ -311,19 +241,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .text("Toggle 2D/3D")
       // draw the 3D scatterplot
       make3DScatterPlot(data);
-      // enable on-click selection of points
+      // enable on-click selection of points -- this will have to be updated with new graphing approach
       d3.selectAll(".threeDpoint")
         .on("click", function(){
-          var objData = {},
-              objId = this.id;
-          objData.UniqueID = objId.substring(objId.indexOf("-") + 1, objId.lengh)
-          clickToggleSelected(objData);
-        })
-        .on("mouseover", function(){
-          classMeAndMyBrothers(this, "active", true);
-        })
-        .on("mouseout", function(){
-          classMeAndMyBrothers(this, "active", false);
+          clickToggleSelected(/*sth*/);
         });
       // ensure proper classing of selected points
       updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
@@ -331,71 +252,40 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
       
  function updateYAxis(){
-    // update which variable is encoded on y-axis
+   // update what the variable encoded is
     yVarCtr++;
     if (yVarCtr % numObjectives === xVarCtr % numObjectives){ yVarCtr++; }
     yVar = updateVar(yVarCtr);
-    // update which variable is encoded to circle size
-    radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
-    // update the y and radius scales
+    // update the scale
     yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
-    radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice();
     // update the axes
-    d3.select(".y.axis").transition().duration(1000).call(yAxis);
+    d3.select(".y.axis").transition().call(yAxis);
     d3.select(".y.axis .label").text(yVar);
-    // update the circles' y pos. and radius
-    d3.selectAll(".dot").transition().duration(1000)
-      .attr("cy", function(d) {return yScale(d[yVar])})
-      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
-    // update radius legend
-    d3.select(this).call(updateRadiusLegend);
+    // update the circles
+    d3.selectAll(".dot").transition()
+      .attr("cy", function(d) {return yScale(d[yVar])});
   }
   
   function updateXAxis(){
-    // update which variable is encoded on x-axis
+   // update which variable is encoded
     xVarCtr++;
     if (xVarCtr % numObjectives === yVarCtr % numObjectives){ xVarCtr++; }
     xVar = updateVar(xVarCtr);
-    // update which variable is encoded to circle size
-    radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
-    // update the x and radius scales
+    // update the scale
     xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
-    radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice();
     // update the axes
-    d3.select(".x.axis").transition().duration(1000).call(xAxis);
+    d3.select(".x.axis").transition().call(xAxis);
     d3.select(".x.axis .label").text(xVar);
-    // update the circles' x pos. and radius
-    d3.selectAll(".dot").transition().duration(1000)
-      .attr("cx", function(d) {return xScale(d[xVar])})
-      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
-    // update the radius legend
-    d3.select(this).call(updateRadiusLegend);
+    // update the circles
+    d3.selectAll(".dot").transition()
+      .attr("cx", function(d) {return xScale(d[xVar])});
   }
-  
   // Ensure proper classing of paths
   function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
     d3.selectAll(".dot,.pcforegroundPath,.threeDpoint").classed("selected",false);
     selected_solutions.forEach(function(d,i){
       d3.selectAll("#path-" + d + ",#dot-" + d + ",#threeDpoint-" + d).classed("selected",true)
     });
-  }
-  
-  function classMeAndMyBrothers(element, className, classification){
-    var uid = element.id.substring(element.id.indexOf("-")+1);
-    d3.selectAll("#path-" + uid + ",#dot-" + uid + ",#threeDpoint-" + uid).classed(className, classification)
-  }
-  
-  // update the radius legend
-  function updateRadiusLegend(){
-    // update legend vals...
-    radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
-    radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
-    // update title
-    d3.select("#radiusLegendTitle").text("Size: " + radiusVar);
-    // update entries' circle sizes
-    d3.selectAll(".radiusLegend circle").attr("r", function(d,i){return radiusScale(radiusLegendVals[i]);})
-    // update entries' text
-    d3.selectAll(".radiusLegend text").text(function(d,i){return radiusLegendVals[i];})
   }
   
   function clickToggleSelected(graphObjData){
@@ -477,14 +367,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .attr("id", function(d){ return "path-" + d.UniqueID; })
         .attr("stroke", function(d) { return colorScale(d.Frontier); })
         .style("fill", "none")
-        .on('mouseover', function(){
-          d3.select(this).call(tip.show);
-          classMeAndMyBrothers(this, "active", true);
-        })
-        .on('mouseout', function(){
-          d3.select(this).call(tip.hide);
-          classMeAndMyBrothers(this, "active", false);
-        })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
         .on("click", function(d){
           clickToggleSelected(d);
         })
@@ -756,130 +640,54 @@ function whichIsBigger(a,b){
 }
 
 function make3DScatterPlot(data){
-  var scatterSeries = [];
-  var frontiers = data.map(function(d){return d["Frontier"];}).filter(function(item, i, ar){ return ar.indexOf(item) === i; });
-  frontiers.forEach(function(d){
-    var currSeries = {};
-    var workingData = data.filter(function(row){return row["Frontier"] === d;});
-    currSeries.name = d;
-    currSeries.color = colorScale(d);
-    // format: [{x1,y1,z1,name1},{x2,y2,z2,name2},...]
-    currSeries.data = workingData.map(function(row){
-      var result = {};
-      result.x = row[objectives[0]];
-      result.y = row[objectives[1]];
-      result.z = row[objectives[2]];
-      result.name = row["UniqueID"];
-      return result;})
-    // add it to the scatterSeries array
-    scatterSeries.push(currSeries);
-  });
+  var cor = [d3.mean(d3.extent(data, function(d) { return d[objectives[0]]; })),
+        d3.mean(d3.extent(data, function(d) { return d[objectives[1]]; })),
+        d3.mean(d3.extent(data, function(d) { return d[objectives[2]]; }))];
+
+  /*scene.append("viewpoint")
+     .attr( "centerOfRotation", cor)
+     .attr( "orientation", [-0.5, 1, 0.2, 1.12*Math.PI/4])
+     .attr( "position", cor);*/
+     
+  /*scene.append("viewpoint")
+      .attr( "centerOfRotation", "3.75 0 10")
+      .attr( "position", "13.742265188709691 -27.453522975182366 16.816062840792625" )
+      .attr( "orientation", "0.962043810961999 0.1696342804961945 0.21376603254551874 1.379433089729343" );*/
       
-    $(function () {
-  
-      // Set up the chart
-      var chart = new Highcharts.Chart({
-          chart: {
-              renderTo: 'threeDScatterDiv',
-              margin: 100,
-              type: 'scatter',
-              options3d: {
-                  enabled: true,
-                  alpha: 10,
-                  beta: 30,
-                  depth: 250,
-                  viewDistance: 5,
-  
-                  frame: {
-                      bottom: { size: 1, color: 'rgba(0,0,0,0.02)' },
-                      back: { size: 1, color: 'rgba(0,0,0,0.04)' },
-                      side: { size: 1, color: 'rgba(0,0,0,0.06)' }
-                  }
-              }
-          },
-          title: {
-              text: ""
-          },
-          subtitle: {
-              text: 'Click and drag the plot area to rotate'
-          },
-          plotOptions: {
-              scatter: {
-                  width: 10,
-                  height: 10,
-                  depth: 10
-              },
-              series: {stickyTracking: false}
-          },
-          xAxis: {
-              min: d3.min(data, function(d) { return d[objectives[0]] }),
-              max: d3.max(data, function(d) { return d[objectives[0]] }),
-              title: {enabled: true, text: objectives[0]},
-              gridLineWidth: 1
-          },
-          yAxis: {
-              min: d3.min(data, function(d) { return d[objectives[1]] }),
-              max: d3.max(data, function(d) { return d[objectives[1]] }),
-              title: {enabled: true, text: objectives[1]},
-              gridLineWidth: 1
-          },
-          zAxis: {
-              min: d3.min(data, function(d) { return d[objectives[2]] }),
-              max: d3.max(data, function(d) { return d[objectives[2]] }),
-              title: {enabled: true, text: objectives[2]},
-              gridLineWidth: 1
-          },
-          legend: {
-              enabled: true
-          },
-          series: scatterSeries
-      });
+  var useThisData = randomData();
+  var useTheseData = data.slice(0,6);
+  useTheseData.push(data[data.length-1]);
+  console.log(useTheseData)
       
-      // assign IDs to 3D points similar to other grahpical objects
-      var threeDpoints = d3.selectAll(".highcharts-markers path")
-        .attr("id", function(){return "threeDpoint-" + this.point.name;})
-        .attr("class","threeDpoint")
-        .attr("opacity",0.4);
-      
-      // format tooltip
-      chart.tooltip.options.formatter = function() {
-        var result =
-              '<strong>Frontier</strong>: ' + this.series.name + '<br>' +
-              '<strong>' + objectives[0] + '</strong>: : ' + this.x + '<br>' +
-              '<strong>' + objectives[1] + '</strong>: : ' + this.y + '<br>' +
-              '<strong>' + objectives[2] + '</strong>: : ' + this.point.z;
-        return result;
+    refresh( useTheseData );
+     
+     function randomData() {
+       var rd = d3.range(6).map( function() { return Math.random()*20; } );
+       console.log(rd);
+        return rd;
       }
 
-      // Add mouse events for rotation
-      $(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
-          e = chart.pointer.normalize(e);
-  
-          var posX = e.pageX,
-              posY = e.pageY,
-              alpha = chart.options.chart.options3d.alpha,
-              beta = chart.options.chart.options3d.beta,
-              newAlpha,
-              newBeta,
-              sensitivity = 5; // lower is more sensitive
-  
-          $(document).bind({
-              'mousemove.hc touchdrag.hc': function (e) {
-                  // Run beta
-                  newBeta = beta + (posX - e.pageX) / sensitivity;
-                  chart.options.chart.options3d.beta = newBeta;
-  
-                  // Run alpha
-                  newAlpha = alpha + (e.pageY - posY) / sensitivity;
-                  chart.options.chart.options3d.alpha = newAlpha;
-  
-                  chart.redraw(false);
-              },
-              'mouseup touchend': function () {
-                  $(document).unbind('.hc');
-              }
-          });
-      });
-  
-  });
+      function refresh( refreshdata ) {
+        var shapes = scene.selectAll("transform").data( refreshdata );
+        var shapesEnter = shapes
+             .enter()
+             .append( "transform" )
+             .append( "shape" )
+              .attr("id", function(d) {return "threeDpoint-" + d["UniqueID"]; });
+        // Enter and update
+        shapes.transition()
+              .attr("translation", function(d,i) { return Math.log10(d[objectives[0]]) + " " + Math.log10(d[objectives[1]]) + " " + Math.log10(d[objectives[2]]); } )
+              .attr("scale", function(d) { return "1.0 1.0 1.0"; } );
+
+        shapesEnter
+            .append("appearance")
+              .append("material")
+              .attr("class", "threeDpointMaterial")
+              .attr("id", function(d) {return "threeDpointMaterial-" + d["UniqueID"]; })
+              .attr("diffuseColor", function(d){ return colorScale(d["Frontier"]); })
+              .attr("transparency", "0.6");
+
+        shapesEnter.append( "sphere" )
+          .attr( "size", "1.0 1.0 1.0" );
+      }
 }
