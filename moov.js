@@ -563,7 +563,18 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
   
   function drawMap(){
-    var mapwidth = 800;
+    var mapDiv = d3.select(".drilldownDiv").append("div")
+      .attr("id","mapDiv");
+    
+    require(["esri/map", "dojo/domReady!"], function(Map) { 
+      var map = new Map("mapDiv", {
+        center: [-121, 47],
+        zoom: 5,
+        basemap: "topo"
+      });
+    });
+    
+    /*var mapwidth = 800;
     var mapheight = 400;
         
     var mapsvg = d3.select(".drilldownDiv").append("svg")
@@ -583,7 +594,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       mapsvg.append("path")
         .datum(topojson.feature(drinkboundary,drinkboundary.objects.drinkboundaryGeo))
         .attr("d", mapPath);
-    });
+    });*/
   }
   
   function drawTable(){
