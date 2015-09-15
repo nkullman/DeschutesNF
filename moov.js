@@ -7,6 +7,8 @@ var xScale = d3.scale.linear()
 
 var yScale = d3.scale.linear()
     .range([height, 0]);
+    
+var radiusScale = d3.scale.sqrt();
 
 var colorScale = d3.scale.category10();
 
@@ -20,11 +22,16 @@ var yAxis = d3.svg.axis()
     
 var xVar,
     yVar,
+    radiusVar,
     scatterPlotCols,
     objectives,
     numObjectives,
-    dotRadius = 4;
+    dotRadius = 4,
+    radiusScaleRange = [dotRadius,dotRadius];
     
+radiusScale.range(radiusScaleRange);
+    
+var encodeRadius = false;
 var drilldownTypeSelector = 0;
 var selected_solutions = [];
 var sortType = [];
@@ -79,7 +86,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     // update points
     d3.selectAll(".dot")
       .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
-      .attr("r",dotRadius/d3.event.scale);
+      .attr("r", function(d) {return radiusScale(d[radiusVar])/d3.event.scale});
   }
   
   scatterPlotCols = Object.keys(data[0]);
@@ -95,6 +102,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       yVarCtr = 1;
   xVar = updateVar(xVarCtr);
   yVar = updateVar(yVarCtr);
+  radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
   function updateVar(varCtr){
       return objectives[varCtr % numObjectives];
   }
@@ -111,6 +119,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
   xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
   yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
+  radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice()
   d3.select("#scatterPlotSVG").call(zoomListener.x(xScale).y(yScale));
 
   svg.append("g")
@@ -150,7 +159,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .on("click", function(d){
         clickToggleSelected(d);
       })
-      .attr("r", dotRadius)
+      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();})
       .attr("cx", function(d) { return xScale(d[xVar]); })
       .attr("cy", function(d) { return yScale(d[yVar]); })
       .attr("fill", function(d) { return colorScale(d.Frontier); })
@@ -194,6 +203,20 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .on("click", function(){
         d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
       });
+    d3.select("#encode3rdVar")
+      .on("click", function(){
+        encodeRadius = !encodeRadius;
+        if (encodeRadius){
+          radiusScaleRange = [dotRadius*0.5, dotRadius*5];
+          radiusScale.range(radiusScaleRange);
+        } else {
+          radiusScaleRange = [dotRadius, dotRadius];
+          radiusScale.range(radiusScaleRange);
+        }
+        // update the circles
+        d3.selectAll(".dot").transition()
+          .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
+      })
       
   drawDrilldown(drilldownTypeSelector);
   
@@ -254,33 +277,41 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
 
       
  function updateYAxis(){
-   // update what the variable encoded is
+    // update which variable is encoded on y-axis
     yVarCtr++;
     if (yVarCtr % numObjectives === xVarCtr % numObjectives){ yVarCtr++; }
     yVar = updateVar(yVarCtr);
-    // update the scale
+    // update which variable is encoded to circle size
+    radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
+    // update the y and radius scales
     yScale.domain(d3.extent(data, function(d) { return d[yVar]; })).nice();
+    radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice();
     // update the axes
-    d3.select(".y.axis").transition().call(yAxis);
+    d3.select(".y.axis").transition().duration(1000).call(yAxis);
     d3.select(".y.axis .label").text(yVar);
-    // update the circles
-    d3.selectAll(".dot").transition()
-      .attr("cy", function(d) {return yScale(d[yVar])});
+    // update the circles' y pos. and radius
+    d3.selectAll(".dot").transition().duration(1000)
+      .attr("cy", function(d) {return yScale(d[yVar])})
+      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
   }
   
   function updateXAxis(){
-   // update which variable is encoded
+    // update which variable is encoded on x-axis
     xVarCtr++;
     if (xVarCtr % numObjectives === yVarCtr % numObjectives){ xVarCtr++; }
     xVar = updateVar(xVarCtr);
-    // update the scale
+    // update which variable is encoded to circle size
+    radiusVar = objectives.filter(function(d){return d !== xVar && d !== yVar;})[0]
+    // update the x and radius scales
     xScale.domain(d3.extent(data, function(d) { return d[xVar]; })).nice();
+    radiusScale.domain(d3.extent(data, function(d) { return d[radiusVar]; })).nice();
     // update the axes
-    d3.select(".x.axis").transition().call(xAxis);
+    d3.select(".x.axis").transition().duration(1000).call(xAxis);
     d3.select(".x.axis .label").text(xVar);
-    // update the circles
-    d3.selectAll(".dot").transition()
-      .attr("cx", function(d) {return xScale(d[xVar])});
+    // update the circles' x pos. and radius
+    d3.selectAll(".dot").transition().duration(1000)
+      .attr("cx", function(d) {return xScale(d[xVar])})
+      .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
   }
   // Ensure proper classing of paths
   function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
