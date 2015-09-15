@@ -1,5 +1,5 @@
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 800 - margin.left - margin.right,
+var margin = {top: 20, right: 200, bottom: 30, left: 50},
+    width = 1000 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 	
 var xScale = d3.scale.linear()
@@ -40,10 +40,11 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
+    var thisdata = d[0][0]["__data__"];
     var result = "";
     for (var col in scatterPlotCols){
       if (col !== "SolutionIndex" && col !== "UniqueID"){
-        result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + d[scatterPlotCols[col]] + "</span>"
+        result += "<strong>" + scatterPlotCols[col] + ":</strong> <span style='color:#e8f4f8'>" + thisdata[scatterPlotCols[col]] + "</span>"
         if (col !== scatterPlotCols.length - 1) { result += "<br>";}
       };
     }
@@ -154,8 +155,14 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("class", "dot")
       .attr("id", function(d){ return "dot-" + d.UniqueID; })
       .classed("selected", false)
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide)
+      .on('mouseover', function(){
+          d3.select(this).call(tip.show);
+          classMeAndMyBrothers(this, "active", true);
+        })
+      .on('mouseout', function(){
+          d3.select(this).call(tip.hide);
+          classMeAndMyBrothers(this, "active", false);
+        })
       .on("click", function(d){
         clickToggleSelected(d);
       })
@@ -173,24 +180,25 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
   legend.append("rect")
-      .attr("x", width - 18)
+      .attr("x", width + 24)
       .attr("width", 18)
       .attr("height", 18)
       .attr("fill", colorScale);
 
   legend.append("text")
-      .attr("x", width - 24)
+      .attr("x", width + 18)
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text(function(d) { return d; });
-      
+  
+  // "Unselect all" option 
   d3.select(".legend").append("text")
       .attr("transform", "translate(0," + colorScale.domain().length*20 + ")")
-      .attr("x", width - 6)
+      .attr("x", width)
       .attr("y", 9)
       .attr("dy", ".35em")
-      .style("text-anchor", "end")
+      .style("text-anchor", "middle")
       .style("text-decoration","underline")
       .style("cursor","pointer")
       .on("click", function(){
@@ -199,17 +207,57 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         drawDrilldown(drilldownTypeSelector);
       })
       .text("Unselect all solutions")
+  // Radius legend title
+  d3.select(".legend").append("text")
+      .attr("class","radiusLegend")
+      .attr("id", "radiusLegendTitle")
+      .attr("transform", "translate(0," + (colorScale.domain().length + 3)*20 + ")")
+      .attr("x", width)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "beginning")
+      .style("font-size", "1.5em")
+      .text("Size: " + radiusVar);
+  // values for the legend
+  var radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
+  radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
+  // build rows of legend
+  var radiusLegend = d3.select(".legend").selectAll("radiusLegendEntry").data(radiusLegendVals).enter()
+      .append("g")
+        .attr("class","radiusLegend radiusLegendEntry")
+        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 4)*20 + i*(10*radiusScale.range()[1])) + ")"; });
+  // the symbols...
+  radiusLegend.append("circle")
+      .attr("cx", width + 24 + 5*radiusScale.range()[1])
+      .attr("r", function(d){return radiusScale(d);})
+      .attr("cy","1em")
+      .attr("fill", "#7f7f7f");
+  // the text
+  radiusLegend.append("text")
+      .attr("x", width + 18)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+  // hide if no radius encoding used
+  if(!encodeRadius) {d3.selectAll(".radiusLegend").attr("display","none");}
+      
+    // Reset the zoom in the 2D scatter plot
     d3.select("#resetZoom2DButton")
       .on("click", function(){
         d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
       });
+    // toggle the encoding of a third variable on the radius of the scatter plot dots
     d3.select("#encode3rdVar")
       .on("click", function(){
         encodeRadius = !encodeRadius;
         if (encodeRadius){
           radiusScaleRange = [dotRadius*0.5, dotRadius*5];
           radiusScale.range(radiusScaleRange);
+          updateRadiusLegend();
+          d3.selectAll(".radiusLegend").attr("display","default");
         } else {
+          d3.selectAll(".radiusLegend").attr("display","none");
           radiusScaleRange = [dotRadius, dotRadius];
           radiusScale.range(radiusScaleRange);
         }
@@ -270,6 +318,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
               objId = this.id;
           objData.UniqueID = objId.substring(objId.indexOf("-") + 1, objId.lengh)
           clickToggleSelected(objData);
+        })
+        .on("mouseover", function(){
+          classMeAndMyBrothers(this, "active", true);
+        })
+        .on("mouseout", function(){
+          classMeAndMyBrothers(this, "active", false);
         });
       // ensure proper classing of selected points
       updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions)
@@ -293,6 +347,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cy", function(d) {return yScale(d[yVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
+    // update radius legend
+    d3.select(this).call(updateRadiusLegend);
   }
   
   function updateXAxis(){
@@ -312,13 +368,34 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cx", function(d) {return xScale(d[xVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
+    // update the radius legend
+    d3.select(this).call(updateRadiusLegend);
   }
+  
   // Ensure proper classing of paths
   function updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions){
     d3.selectAll(".dot,.pcforegroundPath,.threeDpoint").classed("selected",false);
     selected_solutions.forEach(function(d,i){
       d3.selectAll("#path-" + d + ",#dot-" + d + ",#threeDpoint-" + d).classed("selected",true)
     });
+  }
+  
+  function classMeAndMyBrothers(element, className, classification){
+    var uid = element.id.substring(element.id.indexOf("-")+1);
+    d3.selectAll("#path-" + uid + ",#dot-" + uid + ",#threeDpoint-" + uid).classed(className, classification)
+  }
+  
+  // update the radius legend
+  function updateRadiusLegend(){
+    // update legend vals...
+    radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
+    radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
+    // update title
+    d3.select("#radiusLegendTitle").text("Size: " + radiusVar);
+    // update entries' circle sizes
+    d3.selectAll(".radiusLegend circle").attr("r", function(d,i){return radiusScale(radiusLegendVals[i]);})
+    // update entries' text
+    d3.selectAll(".radiusLegend text").text(function(d,i){return radiusLegendVals[i];})
   }
   
   function clickToggleSelected(graphObjData){
@@ -400,8 +477,14 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         .attr("id", function(d){ return "path-" + d.UniqueID; })
         .attr("stroke", function(d) { return colorScale(d.Frontier); })
         .style("fill", "none")
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
+        .on('mouseover', function(){
+          d3.select(this).call(tip.show);
+          classMeAndMyBrothers(this, "active", true);
+        })
+        .on('mouseout', function(){
+          d3.select(this).call(tip.hide);
+          classMeAndMyBrothers(this, "active", false);
+        })
         .on("click", function(d){
           clickToggleSelected(d);
         })
