@@ -415,6 +415,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       graphObjs.classed("selected", true);
     }
     updateTable(selected_solutions);
+    updateMapTable(selected_solutions);
     drawDrilldown(drilldownTypeSelector);
   }
   
@@ -561,40 +562,109 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       updateClassingOfSelectedSolutionsPathsAndDots(selected_solutions);
     }
   }
-  
+ 
   function drawMap(){
-    var mapDiv = d3.select(".drilldownDiv").append("div")
-      .attr("id","mapDiv");
-    
-    require(["esri/map", "dojo/domReady!"], function(Map) { 
-      var map = new Map("mapDiv", {
-        center: [-121, 47],
-        zoom: 5,
-        basemap: "topo"
+    var numMapsPerRow = 4;
+    generateMapTable(selected_solutions, numMapsPerRow);
+    updateMapTable(selected_solutions, numMapsPerRow);
+  }
+  
+  function generateMapTable(solutions, numMapsPerRow){
+    var arrMapsPerRow = d3.range(numMapsPerRow);
+    var table = d3.select(".drilldownDiv")
+        .append("table")
+        .attr("id","mapTable")
+        .style("width","100%");
+    var thead = table.append("thead");
+    var tbody = table.append("tbody");
+    // create table header
+    thead.append("tr")
+      .selectAll("th")
+      .data(arrMapsPerRow)
+      .enter()
+      .append("th")
+        .attr("id", function (d,i) {return "mapTableHeader" + i;})
+        .text(function(colName) { return colName; });
+        
+    // holder for table rows while selection emtpy
+    tbody.append("tr").attr("class","tempRow")
+      .append("td")
+        .attr("colspan",arrMapsPerRow.length)
+        .style("text-align","center")
+        .text("Data will populate when a selection is made");
+        
+    // prepend click-to-delete area
+    table.selectAll("tr").insert("th",":first-child")
+      .on("click",function (d,i){
+        if (typeof d != 'undefined'){ clickToggleSelected(d); }
+      })
+      .text(function(d){
+        if (typeof d != 'undefined'){ return "X"; }
+        else{ return ""; }
       });
-    });
-    
-    /*var mapwidth = 800;
-    var mapheight = 400;
-        
-    var mapsvg = d3.select(".drilldownDiv").append("svg")
-        .attr('id',"mapSVG")
-        .attr('viewBox', "0 0 " + (mapwidth) + " " + (mapheight))
-        .attr('preserveAspectRatio',"xMinYMin meet");
-        
-    var projection = d3.geo.albersUsa()
-        .scale(500)
-        .translate([mapwidth/2, mapheight/2])
-    var mapPath = d3.geo.path()
-        .projection(projection);
-    
-    d3.json("visualization/data/drinkboundary.json", function(error, drinkboundary) {
-      if (error) return console.error(error);
+  }
+  
+  function updateMapTable(solutions, numMapsPerRow){
+      var arrMapsPerRow = d3.range(numMapsPerRow);
+      var workingData = data.filter(function(d){
+        return (selected_solutions.indexOf(d["UniqueID"]) > -1);
+      });
+      var table = d3.select("#mapTable");
+      var tbody = table.select("tbody");
+        // if selection not empty...
+      if (solutions.length > 0){
+        // remove tempRow,
+        d3.select(".tempRow").remove();
+        // generate table rows
+        var rows = tbody.selectAll("tr.mapRow").data(workingData, function(d) { return d["UniqueID"];});
+        rows.enter()
+          .append("tr")
+            .attr("class","mapRow")
+            .attr("id", function(d) {
+              return "mapRow-" + d["UniqueID"];
+            })
+            .insert("th",":first-child")
+              .attr("class","deleteTableRowTrigger")
+              .style("cursor","pointer")
+              .on("click",function (d){
+                if (typeof d != 'undefined'){ clickToggleSelected(d); }
+              })
+              .text(function(d){
+                if (typeof d != 'undefined'){ return "X"; }
+                else{ return ""; }
+              });
+        rows.exit().remove();
+        // generate table cells
+        var cells = rows.selectAll("td")
+          .data(function(row){
+            return arrMapsPerRow.map(function() {
+              return row["UniqueID"];
+            })
+          })
+          .enter()
+          .append("td")
+            // within each cell, create div
+            .append("div")
+              .attr("class", "mapDiv")
+              .attr("id", function(d,i) {return "mapDiv-" + d + "-" + i;})
+              // and to each div, generate a map
+              .each(function(d,i){makeAMap(d,i)});
+      } else {
+        // new strategy for zero-length site selection
+        d3.select(".drilldownDiv").html("");
+        generateMapTable(solutions, numMapsPerRow);
+      }
       
-      mapsvg.append("path")
-        .datum(topojson.feature(drinkboundary,drinkboundary.objects.drinkboundaryGeo))
-        .attr("d", mapPath);
-    });*/
+      function makeAMap(uniqueID,mapCol){
+        var thisDiv = "mapDiv-" + uniqueID + "-" + mapCol;
+        require(["esri/map", "dojo/domReady!"], function(Map) {
+          var map = new Map(thisDiv, {
+            center: [-121, 47],
+            zoom: 5,
+            basemap: "topo"
+          });
+        });
+      }
   }
   
   function drawTable(){
