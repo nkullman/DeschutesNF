@@ -584,7 +584,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .enter()
       .append("th")
         .attr("id", function (d,i) {return "mapTableHeader" + i;})
-        .text(function(colName) { return colName; });
+        .text(function(colName) { return "Time period " + colName; });
         
     // holder for table rows while selection emtpy
     tbody.append("tr").attr("class","tempRow")
@@ -599,12 +599,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         if (typeof d != 'undefined'){ clickToggleSelected(d); }
       })
       .text(function(d){
-        if (typeof d != 'undefined'){ return "X"; }
+        if (typeof d != 'undefined'){ return "[unselect]"; }
         else{ return ""; }
       });
   }
   
   function updateMapTable(solutions, numMapsPerRow){
+      var mapDivSideLength = 200;
       var arrMapsPerRow = d3.range(numMapsPerRow);
       var workingData = data.filter(function(d){
         return (selected_solutions.indexOf(d["UniqueID"]) > -1);
@@ -630,7 +631,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
                 if (typeof d != 'undefined'){ clickToggleSelected(d); }
               })
               .text(function(d){
-                if (typeof d != 'undefined'){ return "X"; }
+                if (typeof d != 'undefined'){ return "[unselect]"; }
                 else{ return ""; }
               });
         rows.exit().remove();
@@ -647,7 +648,10 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
             .append("div")
               .attr("class", "mapDiv")
               .attr("id", function(d,i) {return "mapDiv-" + d + "-" + i;})
-              // and to each div, generate a map
+              .style("width", mapDivSideLength + "px")
+              .style("height", mapDivSideLength + "px")
+              .style("border", "1px solid #7f7f7f")
+              // and to each div, give a map
               .each(function(d,i){makeAMap(d,i)});
       } else {
         // new strategy for zero-length site selection
@@ -656,14 +660,98 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       }
       
       function makeAMap(uniqueID,mapCol){
-        var thisDiv = "mapDiv-" + uniqueID + "-" + mapCol;
-        require(["esri/map", "dojo/domReady!"], function(Map) {
-          var map = new Map(thisDiv, {
-            center: [-121, 47],
-            zoom: 5,
-            basemap: "topo"
-          });
+        var thisDivID = "mapDiv-" + uniqueID + "-" + mapCol;
+        var thisDiv = d3.select("#" + thisDivID);
+        
+        var mapSVG = thisDiv.append("svg")
+          .attr('viewBox', "0 0 " + mapDivSideLength + " " + mapDivSideLength)
+          .attr('preserveAspectRatio',"xMinYMin meet");
+        var mapSVGg = mapSVG.append("g");
+          
+        var zoom = d3.behavior.zoom()
+          .scaleExtent([1, 10])
+          .on("zoom", zoomed);
+          
+        mapSVG.append("text")
+          .attr("x", 3)
+          .attr("y", "1em")
+          .text("Frontier-solution: " + uniqueID);
+        var thisDivTooltip = mapSVG.append("text")
+          .attr("x", 3)
+          .attr("y", "2em");
+        mapSVG.append("text")
+          .attr("x", mapDivSideLength - 3)
+          .attr("y", mapDivSideLength - 3)
+          .attr("dy", "-1em")
+          .style("text-anchor","end")
+          .style("cursor","pointer")
+          .style("text-decoration","underline")
+          .on("click", function(){
+            mapSVGg.transition().call(zoom.translate([0,0]).scale(1).event)
+          })
+          .text("reset");
+          
+        var mapSVGgg = mapSVGg.append("g");
+        
+        var projection,
+            path,
+            t,
+            s;
+            
+        mapSVGg.call(zoom).call(zoom.event);
+          
+        d3.json("visualization/data/drink.json", function(json) {
+          // create unit projection
+          projection = d3.geo.mercator()
+            .scale(1)
+            .translate([0, 0]);
+          // create path generator
+          path = d3.geo.path().projection(projection);
+          // compute bounds of the Drink Boundary, derive scale and tranlation
+          var b = path.bounds(topojson.feature(json, json.objects.drinkStandsGeo));
+              s = .95 / Math.max((b[1][0] - b[0][0]) / mapDivSideLength, (b[1][1] - b[0][1]) / mapDivSideLength);
+              t = [(mapDivSideLength - s * (b[1][0] + b[0][0])) / 2, (mapDivSideLength - s * (b[1][1] + b[0][1])) / 2];
+          // Update the projection to use computed scale & translate.
+          projection
+            .scale(s)
+            .translate(t);
+          
+          // map the stands
+          mapSVGgg.selectAll("path").data(topojson.feature(json, json.objects.drinkStandsGeo).features)
+          .enter()
+            .append("path")
+              .attr("d", path)
+              .attr("class", "feature")
+              .attr("id", function(d){ return thisDivID + "-stand-" + d.id; })
+              .on("mouseover",standMousedOver)
+              .on("mouseout",standMousedOut);
         });
+        
+        function zoomed() {
+          var zoomt = d3.event.translate;
+          var zooms = d3.event.scale;
+          
+         /*console.log(zoomt[0]*s*s + ", " + zoomt[1]*s*s);
+          // bound horizontal panning
+          if (t[0] > 0)  { t[0] = 0; }
+          if (t[0] < -(width*s - width)) { t[0] = -(width*s - width); }
+          // bound vertical panning
+          if (t[1] > 0)  { t[1] = 0; }
+          if (t[1] < -(height*s - height)) { t[1] = -(height*s - height); }*/
+          
+          zoom.translate(zoomt);
+          
+          mapSVGgg.attr("transform", "translate(" + zoomt + ")scale(" + zooms + ")");
+        }
+        
+        function standMousedOver(d){
+          d3.select(this).classed("activeStand", true)
+          thisDivTooltip.text("Stand: " + d.id);
+        }
+        function standMousedOut(d){
+          d3.select(this).classed("activeStand", false);
+          thisDivTooltip.text("");
+        }
       }
   }
   
