@@ -3,3 +3,6 @@
 
 # GIS files
 /visualization/data/gisData/
+
+# Notes to self
+/visualization/data/noteToSelf.txt

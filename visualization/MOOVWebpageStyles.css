@@ -131,9 +131,13 @@ fieldset{
   text-align: left;
 }
 
-.mapDiv{
-  max-height: 200px;
-  max-width: 200px;
+.feature {
+  fill: #ccc;
+  cursor: pointer;
+}
+
+.activeStand {
+  fill: orange;
 }
 
 /* End styling for drilldown. */
