@@ -15,3 +15,7 @@
 
 # FVS output
 /FVS/output/
+/FVS/*.chp
+/FVS/*.out
+/FVS/*.sum
+/FVS/*.trl
