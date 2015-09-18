@@ -11,7 +11,7 @@
 /FVS/data/
 
 # Installation of FVS
-/FVS/FVSInstall/
+/FVS/install/
 
 # FVS output
-/FVS/results/
+/FVS/output/
