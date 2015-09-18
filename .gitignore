@@ -9,3 +9,6 @@
 
 # Data to make FVS key file
 /FVS/data/
+
+# Installation of FVS
+/FVS/FVSInstall/
