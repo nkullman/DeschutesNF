@@ -12,3 +12,6 @@
 
 # Installation of FVS
 /FVS/FVSInstall/
+
+# FVS output
+/FVS/results/
