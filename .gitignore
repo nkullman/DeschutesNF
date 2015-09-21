@@ -6,3 +6,16 @@
 
 # Notes to self
 /visualization/data/noteToSelf.txt
+
+# Data to make FVS key file
+/FVS/data/
+
+# Installation of FVS
+/FVS/install/
+
+# FVS output
+/FVS/output/
+/FVS/*.chp
+/FVS/*.out
+/FVS/*.sum
+/FVS/*.trl
