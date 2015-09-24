@@ -20,3 +20,6 @@
 /FVS/*.out
 /FVS/*.sum
 /FVS/*.trl
+
+# Key files (unmanageably large)
+/FVS/*.key
