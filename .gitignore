@@ -15,6 +15,7 @@
 /FVS/install/
 
 # FVS output
+/FVS/*.txt
 /FVS/output/
 /FVS/*.chp
 /FVS/*.out
