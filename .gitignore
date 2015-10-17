@@ -24,3 +24,10 @@
 
 # Key files (unmanageably large)
 /FVS/*.key
+
+# Excel files used intermediately to craft data files
+/CPLEX/data/*.xlsx
+
+# Files from GIS table dump
+*.txt.xml
+*.ini
