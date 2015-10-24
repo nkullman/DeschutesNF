@@ -60,7 +60,7 @@ var svg = d3.select(".scatterplotDiv").append("svg")
     
 d3.select("#scatterPlotSVG").call(tip);
     
-d3.csv("visualization/data/frontiers.csv", function(error, data) {
+d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(error, data) {
   if (error) throw error;
     
   /** 2D Scatterplot's zoom */
