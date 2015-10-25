@@ -12,6 +12,14 @@ var radiusScale = d3.scale.sqrt();
 
 var colorScale = d3.scale.category10();
 
+var initFinalMapObj = "FireHazardIncrease"; // other option (for now) is "MinOwlHabitat"
+var initFinalMapObjColorScale = d3.scale.linear();
+if (initFinalMapObj == "FireHazardIncrease"){
+  initFinalMapObjColorScale.range(["white","red"]);
+} else {
+  initFinalMapObjColorScale.range(["white","green"]);
+}
+
 var xAxis = d3.svg.axis()
     .scale(xScale)
     .orient("bottom");
@@ -27,7 +35,8 @@ var xVar,
     objectives,
     numObjectives,
     dotRadius = 4,
-    radiusScaleRange = [dotRadius,dotRadius];
+    radiusScaleRange = [dotRadius,dotRadius],
+    numMapsPerRow = 4;
     
 radiusScale.range(radiusScaleRange);
     
@@ -60,7 +69,27 @@ var svg = d3.select(".scatterplotDiv").append("svg")
     
 d3.select("#scatterPlotSVG").call(tip);
     
-d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(error, data) {
+d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maperror, mapdata) {
+  if (maperror) throw maperror;
+  // filter to the objective we're interested in plotting
+  var curmapdata = mapdata.filter(function(d){return d.Objective === initFinalMapObj;})
+  curmapdata.forEach(function (d) {
+    d.UniqueID = d.Frontier + "-" + d.SolutionIndex;
+    d.MapColumn = +d.MapColumn;
+    d.Value = +d.Value
+  });
+  // determine the domain for the coloring scales
+  var vals = [];
+  curmapdata.filter(function(row){
+    return (row.MapColumn === 0 || row.MapColumn === numMapsPerRow-1);
+  }).forEach(function(d){
+    // put all d.Value 's in an array. Then, since we're in an extent sandwich, it should get what we want
+    vals.push(d.Value);
+    return;
+  });
+  initFinalMapObjColorScale.domain(d3.extent(vals));
+d3.csv("visualization/data/climateChange_InteriorSolutions_primary_OnlyNoCC.csv", function(error, data) {
+  
   if (error) throw error;
     
   /** 2D Scatterplot's zoom */
@@ -564,7 +593,6 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
   }
  
   function drawMap(){
-    var numMapsPerRow = 4;
     generateMapTable(selected_solutions, numMapsPerRow);
     updateMapTable(selected_solutions, numMapsPerRow);
   }
@@ -660,6 +688,13 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
       }
       
       function makeAMap(uniqueID,mapCol){
+        
+        var filldata = curmapdata.filter(function(row){
+          return (row.UniqueID === uniqueID && row.MapColumn === mapCol);
+        });
+        
+        console.log(filldata);
+        
         var thisDivID = "mapDiv-" + uniqueID + "-" + mapCol;
         var thisDiv = d3.select("#" + thisDivID);
         
@@ -679,6 +714,9 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
         var thisDivTooltip = mapSVG.append("text")
           .attr("x", 3)
           .attr("y", "2em");
+        var thisDivTooltip2l = mapSVG.append("text")
+          .attr("x", 3)
+          .attr("y", "3em");
         mapSVG.append("text")
           .attr("x", mapDivSideLength - 3)
           .attr("y", mapDivSideLength - 3)
@@ -723,6 +761,17 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
               .attr("d", path)
               .attr("class", "feature")
               .attr("id", function(d){ return thisDivID + "-stand-" + d.id; })
+              .style("fill", function(d){
+                // fill color is a function of the map column, the frontier-solution identifier, the stand, the objective to be shown in the first and last columns
+                if (mapCol === 0 || mapCol === numMapsPerRow - 1){
+                  return initFinalMapObjColorScale(filldata[d.id].Value);
+                } else {
+                  if (filldata[d.id].Value > 0){
+                    return "#000033";
+                  }
+                  return;
+                }
+              })
               .on("mouseover",standMousedOver)
               .on("mouseout",standMousedOut);
         });
@@ -747,10 +796,20 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
         function standMousedOver(d){
           d3.select(this).classed("activeStand", true)
           thisDivTooltip.text("Stand: " + d.id);
+          if (mapCol === 0 || mapCol === numMapsPerRow - 1){
+            if (initFinalMapObj.charAt(0) === "F"){
+              thisDivTooltip2l.text("Fire Hazard: " + filldata[d.id].Value);
+            } else {
+              thisDivTooltip2l.text("Owl Habitat: " + (filldata[d.id].Value > 0));
+            }
+          } else {
+            thisDivTooltip2l.text("Treated: " + (filldata[d.id].Value > 0));
+          }
         }
         function standMousedOut(d){
           d3.select(this).classed("activeStand", false);
           thisDivTooltip.text("");
+          thisDivTooltip2l.text("");
         }
       }
   }
@@ -892,7 +951,8 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
         );
     }
     
-  });
+  })
+});
 
 function whichIsBigger(a,b){
   // determine the numerical value of the arguments
