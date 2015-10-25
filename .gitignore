@@ -15,8 +15,26 @@
 /FVS/install/
 
 # FVS output
+/FVS/*.txt
 /FVS/output/
 /FVS/*.chp
 /FVS/*.out
 /FVS/*.sum
 /FVS/*.trl
+
+# Key files (unmanageably large)
+/FVS/*.key
+
+# Excel files used intermediately to craft data files
+/CPLEX/data/*.xlsx
+
+# Files from GIS table dump
+*.txt.xml
+*.ini
+
+# CPLEX output
+/CPLEX/output/
+/visualization/mapMaking/solutionFiles/
+
+# Working files towards map data
+/visualization/mapMaking/tempMapData/
