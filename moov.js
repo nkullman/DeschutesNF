@@ -88,7 +88,7 @@ d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maper
     return;
   });
   initFinalMapObjColorScale.domain(d3.extent(vals));
-d3.csv("visualization/data/climateChange_InteriorSolutions_primary_OnlyNoCC.csv", function(error, data) {
+d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(error, data) {
   
   if (error) throw error;
     
