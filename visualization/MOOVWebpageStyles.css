@@ -137,7 +137,7 @@ fieldset{
 }
 
 .activeStand {
-  fill: orange;
+  fill: orange !important;
 }
 
 /* End styling for drilldown. */
