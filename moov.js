@@ -12,7 +12,7 @@ var radiusScale = d3.scale.sqrt();
 
 var colorScale = d3.scale.category10();
 
-var initFinalMapObj = "MinOwlHabitat"; // other option (for now) is "MinOwlHabitat"
+var initFinalMapObj = "FireHazardIncrease"; // other option (for now) is "MinOwlHabitat"
 var initFinalMapObjColorScale = d3.scale.linear();
 if (initFinalMapObj == "FireHazardIncrease"){
   initFinalMapObjColorScale.range(["white","red"]);
