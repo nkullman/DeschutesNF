@@ -372,12 +372,16 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
     // update the axes
     d3.select(".y.axis").transition().duration(1000).call(yAxis);
     d3.select(".y.axis .label").text(yVar);
+    // update the zoom behavior
+    zoomListener.y(yScale);
     // update the circles' y pos. and radius
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cy", function(d) {return yScale(d[yVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
     // update radius legend
     d3.select(this).call(updateRadiusLegend);
+    // reset zoom
+    d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
   }
   
   function updateXAxis(){
@@ -393,12 +397,16 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
     // update the axes
     d3.select(".x.axis").transition().duration(1000).call(xAxis);
     d3.select(".x.axis .label").text(xVar);
+    // update the zoom behavior
+    zoomListener.x(xScale);
     // update the circles' x pos. and radius
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cx", function(d) {return xScale(d[xVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
     // update the radius legend
     d3.select(this).call(updateRadiusLegend);
+    // reset zoom
+    d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
   }
   
   // Ensure proper classing of paths
