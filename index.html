@@ -8,21 +8,22 @@
       <!-- CSS for visualization -->
       <link rel="stylesheet" type="text/css" href="visualization/MOOVWebpageStyles.css">
       <!-- D3 -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+      <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
       <!-- D3 tooltip -->
-      <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+      <!--<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
       <!-- TopoJSON for mapping -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+      <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
       <!-- jQuery -->
-      <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+      <!--<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
       <!-- JS libs for Highcharts (3D plotting) -->
-      <script src="http://code.highcharts.com/highcharts.js"></script>
+      <!--<script src="http://code.highcharts.com/highcharts.js"></script>
       <script src="http://code.highcharts.com/highcharts-3d.js"></script>
       <script src="http://code.highcharts.com/modules/exporting.js"></script>
       <!-- Intro.js for initial site tour -->
+      <script src="assets/intro.js"></script>
       <link rel="stylesheet" type="text/css" href="assets/introjs.css">
       <!-- bootstrap -->
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+      <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
       <!-- local libs for offline dev -->
@@ -47,16 +48,31 @@
       </script>
 </head>
 <body>
-   <div class="wrapper"> 
+   <div class="wrapper">
+     <nav class="navbar navbar-default navbar-fixed-top">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="index.html">FrontierViz</a>
+            </div>
+            <div>
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li><a href="#" id="startSiteTour">Help</a></li>
+                <li><a href="about.html" id="aboutLink">About</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="https://uw.edu"><img src="assets/images/UW_Block_W_logo.png" alt="University-of-Washington" height="20px"></a></li>
+                <li><a href="http://depts.washington.edu/qerm/"><img src="assets/images/QERM_logo.png" alt="QERM" height="20px"></a></li>
+                <li><a href="http://nkullman.github.io/"><img src="assets/images/circleK.png" alt="Nick-Kullman" height="20px"></a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
       <main>
-      <div class="studyTitle">
-        <h2>Comparing solutions to multi-objective optimization models</h2>
-      </div> <!-- studyTitle -->
       <div class="scatterplot-area-wrap">
 		  <fieldset class="scatterplot-wrap">
 			  <div class="scatterplotDiv" id="scatterplotDiv">
                           <button id="encode3rdVar">Encode third variable</button>
-                          <button id="resetZoom2DButton">Reset chart view</button>
 			  </div> <!-- scatterplotDiv -->
 		  </fieldset> <!--scatterplot-wrap-->
       </div> <!--scatterplot-area-wrap-->
@@ -73,70 +89,57 @@
       </main>
    </div> <!-- wrapper -->
    <script src="moov.js"></script>
-   <!--<script type="text/javascript">
+   <script type="text/javascript">
       function startIntro(){
         var intro = introJs();
           intro.setOptions({
             steps: [
               { 
-                intro: "<h3>Welcome to SIEVE</h3> This tour will get you started visualizing your sieve analysis data"
+                intro: "<h3>Welcome to FrontierViz</h3> This intro will lead you through the components of this tool"
+              },
+              /*{
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "<h4>2D Scatterplot</h4> Here you see a 2D cross-section of the frontie for the first two objectives in the study."
               },
               {
-                element: document.querySelector('.protein-nav'),
-                intro: "<h4>Navigation area</h4> Here you can see the entire study protein with a colored element for each amino acid."
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "Hover on a solution to see more information. Click to add it to the selection."
               },
               {
-                element: document.querySelector('.protein-nav'),
-                intro: "You can select a site by holding shift and clicking + dragging."
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "Scroll/pan in the scatterplot to zoom in and view the frontiers in more detail."
+              },*/
+              {
+                element: document.querySelector('.yAxisLabel'),
+                intro: "Click on the axis labels to cycle through objectives."
               },
               {
-                element: document.querySelector('.protein-nav'),
-                intro: "Pan and zoom like you would on a map: click and drag, scroll, double-click"
+                element: document.querySelector('#encode3rdVar'),
+                intro: "Add another dimension to the scatterplot by encoding a third objective to point size."
               },
               {
-                element: document.querySelector('#select-by-hxb2-area'),
-                intro: "Select and append sites by HXB2 position, in a comma-separted list with single sites or ranges; e.g., 2, 5, 7-13, 506d."
+                element: document.querySelector('#toggle2D3D'),
+                intro: "If the study is tri-objective, you can view the data in three dimensions"
               },
               {
-                element: document.querySelector("#bar-height-encoding"),
-                intro: "Be default, the height of the element for each site shows its p-value. Here, you can change it to any of the other attributes provided in the results CSV"
+                element: document.querySelector('#pcSVG'),
+                intro: "View each solution's relative achievement in each objective"
               },
               {
-                element: document.querySelector("#color-encoding"),
-                intro: "Different color encodings are available for the sites. Hover over the question mark here to learn more about the options."
+                element: document.querySelector("#pcSVG"),
+                intro: "Click and drag along an axis to select solutions, or click one of the lines"
               },
               {
-                element: document.querySelector('#analysisID-studyname'),
-                intro: "<h4>Study name</h4> This is the study being visualized..."
+                element: document.querySelector("#makeMapsButton"),
+                intro: "When available, click here to see maps corresponing to solutions' prescriptions"
               },
               {
-                element: document.querySelector('#analysisID-protein'),
-                intro: "the protein..."
+                element: document.querySelector('#drawTableButton'),
+                intro: "View the data in tabular form. Click on a column header to sort the data"
               },
               {
-                element: document.querySelector('#analysisID-immunogen'),
-                intro: "and the immunogen."
-              },
-              {
-                element: document.querySelector(".table-container"),
-                intro: "The table let's you view summaries of the selected sites' entropies and distances. " + 
-                "Hit the X to the left of each row to unselect a site. Click the site's ID (first column) to zoom to it in the navigation area. (Note: the table will be empty when no sites are selected)"
-              },
-              {
-                element: document.querySelector(".group-box-bar"),
-                intro: "A box plot showing the distribution of distances over all sites for both the vaccine and placebo groups."
-              },
-              {
-                element: document.querySelector(".stacked-bars"),
-                intro: "For each site selected, there is a chart with two bars. The bars show the distribution of the amino acids that occur at that site for participants in the vaccine (top bar) and placebo (bottom bar)."
-              },
-              {
-                element: document.querySelector("#shareAnalysisButton"),
-                intro: "If you would like to share your current view, click here to get a link you can send to others."
-              },
-              {
-                element: document.querySelector("#otherDatasetsDropdownToggle"),
-                intro: "If you want to check out a different analysis, click here to see the other datasets available."
+                element: document.querySelector('#aboutStudyButton'),
+                intro: "Learn more about the study underlying the data"
               },
               {
                 element: document.querySelector("#aboutLink"),
@@ -147,6 +150,6 @@
 
           intro.start();
       }
-      </script>-->
+      </script>
 </body>
 </html>
