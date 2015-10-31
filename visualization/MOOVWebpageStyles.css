@@ -2,7 +2,7 @@ html,body {
     height:100%;
 }
 
-body-container {
+wrapper {
 	min-height:100%;
 	position:relative;
 }

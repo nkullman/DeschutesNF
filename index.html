@@ -1,21 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="description" content="The Multi-Objective Optimization Visualization tool (MOOV) shows on-the-ground impacts of climate change on forest ecosystem services and management practices.">
+      <title>Visualizing multi-objective optimization</title>
+      <!-- CSS for visualization -->
       <link rel="stylesheet" type="text/css" href="visualization/MOOVWebpageStyles.css">
-      <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+      <!-- D3 -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+      <!-- D3 tooltip -->
       <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+      <!-- TopoJSON for mapping -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+      <!-- jQuery -->
       <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+      <!-- JS libs for Highcharts (3D plotting) -->
       <script src="http://code.highcharts.com/highcharts.js"></script>
       <script src="http://code.highcharts.com/highcharts-3d.js"></script>
       <script src="http://code.highcharts.com/modules/exporting.js"></script>
-      <script src="http://js.arcgis.com/3.14/"></script>
-      <!--<script src="d3.min.js" charset="utf-8"></script>
-      <script src="d3.tip.v0.6.3.js"></script>-->
+      <!-- Intro.js for initial site tour -->
+      <link rel="stylesheet" type="text/css" href="assets/introjs.css">
+      <!-- bootstrap -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+      <!-- local libs for offline dev -->
+      <!--<script src="assests/d3.min.js" charset="utf-8"></script>
+      <script src="assets/d3.tip.v0.6.3.js"></script>
+      <script src="assets/topojson.min.js"></script>
+      <script src="assets/jquery-2.1.4.min.js"></script>
+      <script src="assets/highcharts.js"></script>
+      <script src="assets/highcharts-3d.js"></script>
+      <script src="assets/exporting.js"></script>
+      <script src="assets/bootstrap.min.css"></script>
+      <script src="assets/bootstrap-theme.min.css"></script>
+      <script src="assets/bootstrap.min.js"></script>-->
       <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -24,10 +44,9 @@
             ga('create', 'UA-67398705-3', 'auto');
             ga('send', 'pageview');
       </script>
-      <title>Visualizing multi-objective optimization</title>
 </head>
 <body>
-   <div class="body-container"> 
+   <div class="wrapper"> 
       <main>
       <div class="studyTitle">
         <h2>Comparing solutions to multi-objective optimization models</h2>
@@ -51,7 +70,82 @@
             <div class="drilldownDiv"></div>
       </fieldset> <!-- drilldown-wrap -->
       </main>
-   </div> <!-- body-container -->
+   </div> <!-- wrapper -->
    <script src="moov.js"></script>
+   <!--<script type="text/javascript">
+      function startIntro(){
+        var intro = introJs();
+          intro.setOptions({
+            steps: [
+              { 
+                intro: "<h3>Welcome to SIEVE</h3> This tour will get you started visualizing your sieve analysis data"
+              },
+              {
+                element: document.querySelector('.protein-nav'),
+                intro: "<h4>Navigation area</h4> Here you can see the entire study protein with a colored element for each amino acid."
+              },
+              {
+                element: document.querySelector('.protein-nav'),
+                intro: "You can select a site by holding shift and clicking + dragging."
+              },
+              {
+                element: document.querySelector('.protein-nav'),
+                intro: "Pan and zoom like you would on a map: click and drag, scroll, double-click"
+              },
+              {
+                element: document.querySelector('#select-by-hxb2-area'),
+                intro: "Select and append sites by HXB2 position, in a comma-separted list with single sites or ranges; e.g., 2, 5, 7-13, 506d."
+              },
+              {
+                element: document.querySelector("#bar-height-encoding"),
+                intro: "Be default, the height of the element for each site shows its p-value. Here, you can change it to any of the other attributes provided in the results CSV"
+              },
+              {
+                element: document.querySelector("#color-encoding"),
+                intro: "Different color encodings are available for the sites. Hover over the question mark here to learn more about the options."
+              },
+              {
+                element: document.querySelector('#analysisID-studyname'),
+                intro: "<h4>Study name</h4> This is the study being visualized..."
+              },
+              {
+                element: document.querySelector('#analysisID-protein'),
+                intro: "the protein..."
+              },
+              {
+                element: document.querySelector('#analysisID-immunogen'),
+                intro: "and the immunogen."
+              },
+              {
+                element: document.querySelector(".table-container"),
+                intro: "The table let's you view summaries of the selected sites' entropies and distances. " + 
+                "Hit the X to the left of each row to unselect a site. Click the site's ID (first column) to zoom to it in the navigation area. (Note: the table will be empty when no sites are selected)"
+              },
+              {
+                element: document.querySelector(".group-box-bar"),
+                intro: "A box plot showing the distribution of distances over all sites for both the vaccine and placebo groups."
+              },
+              {
+                element: document.querySelector(".stacked-bars"),
+                intro: "For each site selected, there is a chart with two bars. The bars show the distribution of the amino acids that occur at that site for participants in the vaccine (top bar) and placebo (bottom bar)."
+              },
+              {
+                element: document.querySelector("#shareAnalysisButton"),
+                intro: "If you would like to share your current view, click here to get a link you can send to others."
+              },
+              {
+                element: document.querySelector("#otherDatasetsDropdownToggle"),
+                intro: "If you want to check out a different analysis, click here to see the other datasets available."
+              },
+              {
+                element: document.querySelector("#aboutLink"),
+                intro: "Want to learn more about this tool? Check out our about page."
+              }
+            ]
+          });
+
+          intro.start();
+      }
+      </script>-->
 </body>
 </html>
