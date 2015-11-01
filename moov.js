@@ -38,6 +38,8 @@ var xVar,
     radiusScaleRange = [dotRadius,dotRadius],
     numMapsPerRow = 4;
     
+var intro = introJs();
+    
 radiusScale.range(radiusScaleRange);
     
 var encodeRadius = false;
@@ -332,9 +334,10 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
     });
     
   // site tour function
+  defineIntro(intro);
   d3.select("#startSiteTour")
 		.on("click", function(){
-			startIntro();
+			intro.start();
 		});
     
     /** To ensure robustness to the number of objectives,
@@ -1004,6 +1007,71 @@ function whichIsBigger(a,b){
     if (firstNum > secondNum) return 1;
     else return -1; // (firstNum < secondNum). It is impossible to have equality here (would have been captured in outer if)
   }
+}
+
+function defineIntro(theIntro) {
+  theIntro.setOptions({
+            steps: [
+              { 
+                intro: "<h3>Welcome to FrontierViz</h3> We're working on a site tour to show you around, and how to take advantage of each of the components here."
+              },
+              {
+                intro: "In the meantime, feel free to poke around. Try clicking on the axis labels on the scatterplot, and brushing along an axis on the parallel coordiantes view"
+              },
+              {
+                intro: "More to come. If you have questions, <a href='mailto:nick.kullman@gmail.com'>send us an email</a> or view the <a href='https://github.com/nkullman/DeschutesNF'>source code</a>."
+              }
+              /*
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "<h4>2D Scatterplot</h4> Here you see a 2D cross-section of the frontier for the first two objectives in the study."
+              },
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "Hover on a solution to see more information. Click to add it to the selection."
+              },
+              {
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "Scroll/pan in the scatterplot to zoom in and view the frontiers in more detail."
+              },
+              {
+                element: document.querySelector('.yAxisLabel'),
+                intro: "Click on the axis labels to cycle through objectives."
+              },
+              {
+                element: document.querySelector('#encode3rdVar'),
+                intro: "Add another dimension to the scatterplot by encoding a third objective to point size."
+              },
+              {
+                element: document.querySelector('#toggle2D3D'),
+                intro: "If the study is tri-objective, you can view the data in three dimensions"
+              },
+              {
+                element: document.querySelector('#pcSVG'),
+                intro: "View each solution's relative achievement in each objective"
+              },
+              {
+                element: document.querySelector("#pcSVG"),
+                intro: "Click and drag along an axis to select solutions, or click one of the lines"
+              },
+              {
+                element: document.querySelector("#makeMapsButton"),
+                intro: "When available, click here to see maps corresponing to solutions' prescriptions"
+              },
+              {
+                element: document.querySelector('#drawTableButton'),
+                intro: "View the data in tabular form. Click on a column header to sort the data"
+              },
+              {
+                element: document.querySelector('#aboutStudyButton'),
+                intro: "Learn more about the study underlying the data"
+              },
+              {
+                element: document.querySelector("#aboutLink"),
+                intro: "Want to learn more about this tool? Check out our about page."
+              }*/
+            ]
+          });
 }
 
 function make3DScatterPlot(data){
