@@ -38,6 +38,8 @@ var xVar,
     radiusScaleRange = [dotRadius,dotRadius],
     numMapsPerRow = 4;
     
+var intro = introJs();
+    
 radiusScale.range(radiusScaleRange);
     
 var encodeRadius = false;
@@ -157,7 +159,7 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
     .append("text")
-      .attr("class", "label")
+      .attr("class", "label xAxisLabel")
       .on("click", updateXAxis)
       .attr("x", width)
       .attr("y", -6)
@@ -169,7 +171,7 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
       .attr("class", "y axis")
       .call(yAxis)
     .append("text")
-      .attr("class", "label")
+      .attr("class", "label yAxisLabel")
       .on("click", updateYAxis)
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
@@ -236,17 +238,30 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
         drawDrilldown(drilldownTypeSelector);
       })
       .text("Unselect all solutions")
+  // "Reset view" option 
+  d3.select(".legend").append("text")
+      .attr("transform", "translate(0," + (colorScale.domain().length + 1)*20 + ")")
+      .attr("x", width)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "middle")
+      .style("text-decoration","underline")
+      .style("cursor","pointer")
+      .on("click", function(){
+        d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
+      })
+      .text("Reset chart view")
   // Radius legend title
   d3.select(".legend").append("text")
       .attr("class","radiusLegend")
       .attr("id", "radiusLegendTitle")
-      .attr("transform", "translate(0," + (colorScale.domain().length + 3)*20 + ")")
+      .attr("transform", "translate(0," + (colorScale.domain().length + 4)*20 + ")")
       .attr("x", width)
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "beginning")
-      .style("font-size", "1.5em")
-      .text("Size: " + radiusVar);
+      .style("font-size", "1.15em")
+      .text(radiusVar);
   // values for the legend
   var radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
   radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
@@ -254,7 +269,7 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
   var radiusLegend = d3.select(".legend").selectAll("radiusLegendEntry").data(radiusLegendVals).enter()
       .append("g")
         .attr("class","radiusLegend radiusLegendEntry")
-        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 4)*20 + i*(10*radiusScale.range()[1])) + ")"; });
+        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 5)*20 + i*(10*radiusScale.range()[1])) + ")"; });
   // the symbols...
   radiusLegend.append("circle")
       .attr("cx", width + 24 + 5*radiusScale.range()[1])
@@ -271,11 +286,6 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
   // hide if no radius encoding used
   if(!encodeRadius) {d3.selectAll(".radiusLegend").attr("display","none");}
       
-    // Reset the zoom in the 2D scatter plot
-    d3.select("#resetZoom2DButton")
-      .on("click", function(){
-        d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
-      });
     // toggle the encoding of a third variable on the radius of the scatter plot dots
     d3.select("#encode3rdVar")
       .on("click", function(){
@@ -322,6 +332,13 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
       drilldownTypeSelector = 4;
       drawDrilldown(drilldownTypeSelector);
     });
+    
+  // site tour function
+  defineIntro(intro);
+  d3.select("#startSiteTour")
+		.on("click", function(){
+			intro.start();
+		});
     
     /** To ensure robustness to the number of objectives,
      * breakout the functinoality that is specific to 3-dimensions */
@@ -428,7 +445,7 @@ d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(err
     radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
     radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
     // update title
-    d3.select("#radiusLegendTitle").text("Size: " + radiusVar);
+    d3.select("#radiusLegendTitle").text(radiusVar);
     // update entries' circle sizes
     d3.selectAll(".radiusLegend circle").attr("r", function(d,i){return radiusScale(radiusLegendVals[i]);})
     // update entries' text
@@ -990,6 +1007,71 @@ function whichIsBigger(a,b){
     if (firstNum > secondNum) return 1;
     else return -1; // (firstNum < secondNum). It is impossible to have equality here (would have been captured in outer if)
   }
+}
+
+function defineIntro(theIntro) {
+  theIntro.setOptions({
+            steps: [
+              { 
+                intro: "<h3>Welcome to FrontierViz</h3> We're working on a site tour to show you around, and how to take advantage of each of the components here."
+              },
+              {
+                intro: "In the meantime, feel free to poke around. Try clicking on the axis labels on the scatterplot, and brushing along an axis on the parallel coordiantes view"
+              },
+              {
+                intro: "More to come. If you have questions, <a href='mailto:nick.kullman@gmail.com'>send us an email</a> or view the <a href='https://github.com/nkullman/DeschutesNF'>source code</a>."
+              }
+              /*
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "<h4>2D Scatterplot</h4> Here you see a 2D cross-section of the frontier for the first two objectives in the study."
+              },
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "Hover on a solution to see more information. Click to add it to the selection."
+              },
+              {
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "Scroll/pan in the scatterplot to zoom in and view the frontiers in more detail."
+              },
+              {
+                element: document.querySelector('.yAxisLabel'),
+                intro: "Click on the axis labels to cycle through objectives."
+              },
+              {
+                element: document.querySelector('#encode3rdVar'),
+                intro: "Add another dimension to the scatterplot by encoding a third objective to point size."
+              },
+              {
+                element: document.querySelector('#toggle2D3D'),
+                intro: "If the study is tri-objective, you can view the data in three dimensions"
+              },
+              {
+                element: document.querySelector('#pcSVG'),
+                intro: "View each solution's relative achievement in each objective"
+              },
+              {
+                element: document.querySelector("#pcSVG"),
+                intro: "Click and drag along an axis to select solutions, or click one of the lines"
+              },
+              {
+                element: document.querySelector("#makeMapsButton"),
+                intro: "When available, click here to see maps corresponing to solutions' prescriptions"
+              },
+              {
+                element: document.querySelector('#drawTableButton'),
+                intro: "View the data in tabular form. Click on a column header to sort the data"
+              },
+              {
+                element: document.querySelector('#aboutStudyButton'),
+                intro: "Learn more about the study underlying the data"
+              },
+              {
+                element: document.querySelector("#aboutLink"),
+                intro: "Want to learn more about this tool? Check out our about page."
+              }*/
+            ]
+          });
 }
 
 function make3DScatterPlot(data){
