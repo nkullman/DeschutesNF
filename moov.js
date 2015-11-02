@@ -648,7 +648,12 @@ d3.csv("visualization/data/" + datafilename, function(error, data) {
       .enter()
       .append("th")
         .attr("id", function (d,i) {return "mapTableHeader" + i;})
-        .text(function(colName) { return "Time period " + colName; });
+        .text(function(colName) {
+          if (colName === 0) {return "Initial Fire Hazard";}
+          else if (colName === 1) {return "Treatment in period 1";}
+          else if (colName === 2) {return "Treatment in period 2";}
+          else if (colName === 3) {return "Final Fire Hazard";}
+        });
         
     // holder for table rows while selection emtpy
     tbody.append("tr").attr("class","tempRow")
