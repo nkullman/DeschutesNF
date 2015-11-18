@@ -36,7 +36,8 @@ var xVar,
     numObjectives,
     dotRadius = 4,
     radiusScaleRange = [dotRadius,dotRadius],
-    numMapsPerRow = 4;
+    numMapsPerRow = 4,
+    datafilename;
     
 var intro = introJs();
     
@@ -90,7 +91,17 @@ d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maper
     return;
   });
   initFinalMapObjColorScale.domain(d3.extent(vals));
-d3.csv("visualization/data/climateChange_EfficientSolutions_primary.csv", function(error, data) {
+  
+  var urlfrontierName = getParameterByName("frontier");
+  if (urlfrontierName === "none"){
+    datafilename = "climateChange_EfficientSolutions_NoneOnly.csv";
+  } else if (urlfrontierName === "e85"){
+    datafilename = "climateChange_EfficientSolutions_E85.csv";
+  } else {
+    datafilename = "climateChange_EfficientSolutions_primary.csv";
+  }
+  
+d3.csv("visualization/data/" + datafilename, function(error, data) {
   
   if (error) throw error;
     
@@ -637,7 +648,12 @@ d3.csv("visualization/data/climateChange_EfficientSolutions_primary.csv", functi
       .enter()
       .append("th")
         .attr("id", function (d,i) {return "mapTableHeader" + i;})
-        .text(function(colName) { return "Time period " + colName; });
+        .text(function(colName) {
+          if (colName === 0) {return "Initial Fire Hazard";}
+          else if (colName === 1) {return "Treatment in period 1";}
+          else if (colName === 2) {return "Treatment in period 2";}
+          else if (colName === 3) {return "Final Fire Hazard";}
+        });
         
     // holder for table rows while selection emtpy
     tbody.append("tr").attr("class","tempRow")
@@ -1201,4 +1217,10 @@ function make3DScatterPlot(data){
       });
   
   });
+}
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
