@@ -101,7 +101,8 @@ d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maper
     datafilename = "climateChange_EfficientSolutions_primary.csv";
   }
   
-d3.csv("visualization/data/" + datafilename, function(error, data) {
+//d3.csv("visualization/data/" + datafilename, function(error, data) {
+d3.csv("visualization/data/climateChange_AllSolutions_primary.csv", function(error, data) {
   
   if (error) throw error;
     
