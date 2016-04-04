@@ -31,3 +31,10 @@
 # Files from GIS table dump
 *.txt.xml
 *.ini
+
+# CPLEX output
+/CPLEX/output/
+/visualization/mapMaking/solutionFiles/
+
+# ipynb checkpoints
+*-checkpoint.ipynb
