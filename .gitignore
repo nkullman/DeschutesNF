@@ -37,4 +37,4 @@
 /visualization/mapMaking/solutionFiles/
 
 # ipynb checkpoints
-*-checkpoint.ipynb
+#*-checkpoint.ipynb
