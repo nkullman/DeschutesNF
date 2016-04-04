@@ -38,3 +38,6 @@
 
 # ipynb checkpoints
 *-checkpoint.ipynb
+
+# Working files towards map data
+/visualization/mapMaking/tempMapData/

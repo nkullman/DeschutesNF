@@ -12,6 +12,14 @@ var radiusScale = d3.scale.sqrt();
 
 var colorScale = d3.scale.category10();
 
+var initFinalMapObj = "FireHazardIncrease"; // other option (for now) is "MinOwlHabitat"
+var initFinalMapObjColorScale = d3.scale.linear();
+if (initFinalMapObj == "FireHazardIncrease"){
+  initFinalMapObjColorScale.range(["white","red"]);
+} else {
+  initFinalMapObjColorScale.range(["#d3d3d3","green"]);
+}
+
 var xAxis = d3.svg.axis()
     .scale(xScale)
     .orient("bottom");
@@ -27,7 +35,11 @@ var xVar,
     objectives,
     numObjectives,
     dotRadius = 4,
-    radiusScaleRange = [dotRadius,dotRadius];
+    radiusScaleRange = [dotRadius,dotRadius],
+    numMapsPerRow = 4,
+    datafilename;
+    
+var intro = introJs();
     
 radiusScale.range(radiusScaleRange);
     
@@ -60,7 +72,37 @@ var svg = d3.select(".scatterplotDiv").append("svg")
     
 d3.select("#scatterPlotSVG").call(tip);
     
-d3.csv("visualization/data/frontiers.csv", function(error, data) {
+d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maperror, mapdata) {
+  if (maperror) throw maperror;
+  // filter to the objective we're interested in plotting
+  var curmapdata = mapdata.filter(function(d){return d.Objective === initFinalMapObj;})
+  curmapdata.forEach(function (d) {
+    d.UniqueID = d.Frontier + "-" + d.SolutionIndex;
+    d.MapColumn = +d.MapColumn;
+    d.Value = +d.Value
+  });
+  // determine the domain for the coloring scales
+  var vals = [];
+  curmapdata.filter(function(row){
+    return (row.MapColumn === 0 || row.MapColumn === numMapsPerRow-1);
+  }).forEach(function(d){
+    // put all d.Value 's in an array. Then, since we're in an extent sandwich, it should get what we want
+    vals.push(d.Value);
+    return;
+  });
+  initFinalMapObjColorScale.domain(d3.extent(vals));
+  
+  var urlfrontierName = getParameterByName("frontier");
+  if (urlfrontierName === "none"){
+    datafilename = "climateChange_EfficientSolutions_NoneOnly.csv";
+  } else if (urlfrontierName === "e85"){
+    datafilename = "climateChange_EfficientSolutions_E85.csv";
+  } else {
+    datafilename = "climateChange_EfficientSolutions_primary.csv";
+  }
+  
+d3.csv("visualization/data/" + datafilename, function(error, data) {
+  
   if (error) throw error;
     
   /** 2D Scatterplot's zoom */
@@ -128,7 +170,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
     .append("text")
-      .attr("class", "label")
+      .attr("class", "label xAxisLabel")
       .on("click", updateXAxis)
       .attr("x", width)
       .attr("y", -6)
@@ -140,7 +182,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .attr("class", "y axis")
       .call(yAxis)
     .append("text")
-      .attr("class", "label")
+      .attr("class", "label yAxisLabel")
       .on("click", updateYAxis)
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
@@ -207,17 +249,30 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         drawDrilldown(drilldownTypeSelector);
       })
       .text("Unselect all solutions")
+  // "Reset view" option 
+  d3.select(".legend").append("text")
+      .attr("transform", "translate(0," + (colorScale.domain().length + 1)*20 + ")")
+      .attr("x", width)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "middle")
+      .style("text-decoration","underline")
+      .style("cursor","pointer")
+      .on("click", function(){
+        d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
+      })
+      .text("Reset chart view")
   // Radius legend title
   d3.select(".legend").append("text")
       .attr("class","radiusLegend")
       .attr("id", "radiusLegendTitle")
-      .attr("transform", "translate(0," + (colorScale.domain().length + 3)*20 + ")")
+      .attr("transform", "translate(0," + (colorScale.domain().length + 4)*20 + ")")
       .attr("x", width)
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "beginning")
-      .style("font-size", "1.5em")
-      .text("Size: " + radiusVar);
+      .style("font-size", "1.15em")
+      .text(radiusVar);
   // values for the legend
   var radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
   radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
@@ -225,7 +280,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   var radiusLegend = d3.select(".legend").selectAll("radiusLegendEntry").data(radiusLegendVals).enter()
       .append("g")
         .attr("class","radiusLegend radiusLegendEntry")
-        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 4)*20 + i*(10*radiusScale.range()[1])) + ")"; });
+        .attr("transform", function(d, i) { return "translate(0," + ((colorScale.domain().length + 5)*20 + i*(10*radiusScale.range()[1])) + ")"; });
   // the symbols...
   radiusLegend.append("circle")
       .attr("cx", width + 24 + 5*radiusScale.range()[1])
@@ -242,11 +297,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   // hide if no radius encoding used
   if(!encodeRadius) {d3.selectAll(".radiusLegend").attr("display","none");}
       
-    // Reset the zoom in the 2D scatter plot
-    d3.select("#resetZoom2DButton")
-      .on("click", function(){
-        d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
-      });
     // toggle the encoding of a third variable on the radius of the scatter plot dots
     d3.select("#encode3rdVar")
       .on("click", function(){
@@ -293,6 +343,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       drilldownTypeSelector = 4;
       drawDrilldown(drilldownTypeSelector);
     });
+    
+  // site tour function
+  defineIntro(intro);
+  d3.select("#startSiteTour")
+		.on("click", function(){
+			intro.start();
+		});
     
     /** To ensure robustness to the number of objectives,
      * breakout the functinoality that is specific to 3-dimensions */
@@ -343,12 +400,16 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     // update the axes
     d3.select(".y.axis").transition().duration(1000).call(yAxis);
     d3.select(".y.axis .label").text(yVar);
+    // update the zoom behavior
+    zoomListener.y(yScale);
     // update the circles' y pos. and radius
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cy", function(d) {return yScale(d[yVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
     // update radius legend
     d3.select(this).call(updateRadiusLegend);
+    // reset zoom
+    d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
   }
   
   function updateXAxis(){
@@ -364,12 +425,16 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     // update the axes
     d3.select(".x.axis").transition().duration(1000).call(xAxis);
     d3.select(".x.axis .label").text(xVar);
+    // update the zoom behavior
+    zoomListener.x(xScale);
     // update the circles' x pos. and radius
     d3.selectAll(".dot").transition().duration(1000)
       .attr("cx", function(d) {return xScale(d[xVar])})
       .attr("r", function(d) {return radiusScale(d[radiusVar])/zoomListener.scale();});
     // update the radius legend
     d3.select(this).call(updateRadiusLegend);
+    // reset zoom
+    d3.select("#scatterPlotSVG").transition().call(zoomListener.translate([0,0]).scale(1).event);
   }
   
   // Ensure proper classing of paths
@@ -391,7 +456,7 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
     radiusLegendVals = radiusScale.domain().map(function(d) {return d;})
     radiusLegendVals.splice(1,0,d3.mean(radiusScale.domain()));
     // update title
-    d3.select("#radiusLegendTitle").text("Size: " + radiusVar);
+    d3.select("#radiusLegendTitle").text(radiusVar);
     // update entries' circle sizes
     d3.selectAll(".radiusLegend circle").attr("r", function(d,i){return radiusScale(radiusLegendVals[i]);})
     // update entries' text
@@ -564,7 +629,6 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
   }
  
   function drawMap(){
-    var numMapsPerRow = 4;
     generateMapTable(selected_solutions, numMapsPerRow);
     updateMapTable(selected_solutions, numMapsPerRow);
   }
@@ -584,7 +648,12 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       .enter()
       .append("th")
         .attr("id", function (d,i) {return "mapTableHeader" + i;})
-        .text(function(colName) { return "Time period " + colName; });
+        .text(function(colName) {
+          if (colName === 0) {return "Initial Fire Hazard";}
+          else if (colName === 1) {return "Treatment in period 1";}
+          else if (colName === 2) {return "Treatment in period 2";}
+          else if (colName === 3) {return "Final Fire Hazard";}
+        });
         
     // holder for table rows while selection emtpy
     tbody.append("tr").attr("class","tempRow")
@@ -660,6 +729,13 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
       }
       
       function makeAMap(uniqueID,mapCol){
+        
+        var filldata = curmapdata.filter(function(row){
+          return (row.UniqueID === uniqueID && row.MapColumn === mapCol);
+        });
+        
+        console.log(filldata);
+        
         var thisDivID = "mapDiv-" + uniqueID + "-" + mapCol;
         var thisDiv = d3.select("#" + thisDivID);
         
@@ -679,6 +755,9 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         var thisDivTooltip = mapSVG.append("text")
           .attr("x", 3)
           .attr("y", "2em");
+        var thisDivTooltip2l = mapSVG.append("text")
+          .attr("x", 3)
+          .attr("y", "3em");
         mapSVG.append("text")
           .attr("x", mapDivSideLength - 3)
           .attr("y", mapDivSideLength - 3)
@@ -723,6 +802,17 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
               .attr("d", path)
               .attr("class", "feature")
               .attr("id", function(d){ return thisDivID + "-stand-" + d.id; })
+              .style("fill", function(d){
+                // fill color is a function of the map column, the frontier-solution identifier, the stand, the objective to be shown in the first and last columns
+                if (mapCol === 0 || mapCol === numMapsPerRow - 1){
+                  return initFinalMapObjColorScale(filldata[d.id].Value);
+                } else {
+                  if (filldata[d.id].Value > 0){
+                    return "#000033";
+                  }
+                  return;
+                }
+              })
               .on("mouseover",standMousedOver)
               .on("mouseout",standMousedOut);
         });
@@ -747,10 +837,20 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         function standMousedOver(d){
           d3.select(this).classed("activeStand", true)
           thisDivTooltip.text("Stand: " + d.id);
+          if (mapCol === 0 || mapCol === numMapsPerRow - 1){
+            if (initFinalMapObj.charAt(0) === "F"){
+              thisDivTooltip2l.text("Fire Hazard: " + filldata[d.id].Value);
+            } else {
+              thisDivTooltip2l.text("Owl Habitat: " + (filldata[d.id].Value > 0));
+            }
+          } else {
+            thisDivTooltip2l.text("Treated: " + (filldata[d.id].Value > 0));
+          }
         }
         function standMousedOut(d){
           d3.select(this).classed("activeStand", false);
           thisDivTooltip.text("");
+          thisDivTooltip2l.text("");
         }
       }
   }
@@ -892,7 +992,8 @@ d3.csv("visualization/data/frontiers.csv", function(error, data) {
         );
     }
     
-  });
+  })
+});
 
 function whichIsBigger(a,b){
   // determine the numerical value of the arguments
@@ -922,6 +1023,71 @@ function whichIsBigger(a,b){
     if (firstNum > secondNum) return 1;
     else return -1; // (firstNum < secondNum). It is impossible to have equality here (would have been captured in outer if)
   }
+}
+
+function defineIntro(theIntro) {
+  theIntro.setOptions({
+            steps: [
+              { 
+                intro: "<h3>Welcome to FrontierViz</h3> We're working on a site tour to show you around, and how to take advantage of each of the components here."
+              },
+              {
+                intro: "In the meantime, feel free to poke around. Try clicking on the axis labels on the scatterplot, and brushing along an axis on the parallel coordiantes view"
+              },
+              {
+                intro: "More to come. If you have questions, <a href='mailto:nick.kullman@gmail.com'>send us an email</a> or view the <a href='https://github.com/nkullman/DeschutesNF'>source code</a>."
+              }
+              /*
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "<h4>2D Scatterplot</h4> Here you see a 2D cross-section of the frontier for the first two objectives in the study."
+              },
+              {
+                element: document.getElementById('scatterPlotSVG'),
+                intro: "Hover on a solution to see more information. Click to add it to the selection."
+              },
+              {
+                element: document.querySelector('#scatterPlotSVG'),
+                intro: "Scroll/pan in the scatterplot to zoom in and view the frontiers in more detail."
+              },
+              {
+                element: document.querySelector('.yAxisLabel'),
+                intro: "Click on the axis labels to cycle through objectives."
+              },
+              {
+                element: document.querySelector('#encode3rdVar'),
+                intro: "Add another dimension to the scatterplot by encoding a third objective to point size."
+              },
+              {
+                element: document.querySelector('#toggle2D3D'),
+                intro: "If the study is tri-objective, you can view the data in three dimensions"
+              },
+              {
+                element: document.querySelector('#pcSVG'),
+                intro: "View each solution's relative achievement in each objective"
+              },
+              {
+                element: document.querySelector("#pcSVG"),
+                intro: "Click and drag along an axis to select solutions, or click one of the lines"
+              },
+              {
+                element: document.querySelector("#makeMapsButton"),
+                intro: "When available, click here to see maps corresponing to solutions' prescriptions"
+              },
+              {
+                element: document.querySelector('#drawTableButton'),
+                intro: "View the data in tabular form. Click on a column header to sort the data"
+              },
+              {
+                element: document.querySelector('#aboutStudyButton'),
+                intro: "Learn more about the study underlying the data"
+              },
+              {
+                element: document.querySelector("#aboutLink"),
+                intro: "Want to learn more about this tool? Check out our about page."
+              }*/
+            ]
+          });
 }
 
 function make3DScatterPlot(data){
@@ -1051,4 +1217,10 @@ function make3DScatterPlot(data){
       });
   
   });
+}
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
