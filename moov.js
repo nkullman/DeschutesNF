@@ -1094,23 +1094,42 @@ function make3DScatterPlot(data){
   var scatterSeries = [];
   var frontiers = data.map(function(d){return d["Frontier"];}).filter(function(item, i, ar){ return ar.indexOf(item) === i; });
   frontiers.forEach(function(d){
-    var currSeries = {};
+    var trace = {};
     var workingData = data.filter(function(row){return row["Frontier"] === d;});
-    currSeries.name = d;
-    currSeries.color = colorScale(d);
-    // format: [{x1,y1,z1,name1},{x2,y2,z2,name2},...]
-    currSeries.data = workingData.map(function(row){
-      var result = {};
-      result.x = row[objectives[0]];
-      result.y = row[objectives[1]];
-      result.z = row[objectives[2]];
-      result.name = row["UniqueID"];
-      return result;})
+    trace.name = d;
+    trace.type = 'scatter3d';
+    trace.mode = 'markers';
+    trace.marker = {
+        color: colorScale(d),
+        opacity: 0.4
+    };
+    trace.x = workingData.map(function(d) { return d[objectives[0]]; });
+    trace.y = workingData.map(function(d) { return d[objectives[1]]; });
+    trace.z = workingData.map(function(d) { return d[objectives[2]]; });
+    trace.text = workingData.map(function(d) { return d["UniqueID"]; });
     // add it to the scatterSeries array
-    scatterSeries.push(currSeries);
+    scatterSeries.push(trace);
   });
+  
+  // Specify layout
+  var layout = {
+      margin: {
+          l: 0,
+          r: 0,
+          b: 0,
+          t: 0
+      },
+      autosize: true,
+      title: "Frontiers",
+      xaxis: {title: objectives[0]},
+      yaxis: {title: objectives[1]},
+      zaxis: {title: objectives[2]}
+  };
+  
+  Plotly.newPlot('threeDScatterDiv', scatterSeries, layout);
+  
       
-    $(function () {
+   /* $(function () {
   
       // Set up the chart
       var chart = new Highcharts.Chart({
@@ -1216,7 +1235,7 @@ function make3DScatterPlot(data){
           });
       });
   
-  });
+  });*/
 }
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
