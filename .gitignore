@@ -36,5 +36,8 @@
 /CPLEX/output/
 /visualization/mapMaking/solutionFiles/
 
+# ipynb checkpoints
+*-checkpoint.ipynb
+
 # Working files towards map data
 /visualization/mapMaking/tempMapData/
