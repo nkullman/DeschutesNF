@@ -102,7 +102,7 @@ d3.csv("visualization/mapMaking/mapMakingData_noneOnly_final.csv",function(maper
   }
   
 d3.csv("visualization/data/" + datafilename, function(error, data) {
-  
+
   if (error) throw error;
     
   /** 2D Scatterplot's zoom */
