@@ -1113,20 +1113,24 @@ function make3DScatterPlot(data){
   
   // Specify layout
   var layout = {
-      margin: {
-          l: 0,
-          r: 0,
-          b: 0,
-          t: 0
-      },
+      
       autosize: true,
-      title: "Frontiers",
-      xaxis: {title: objectives[0]},
-      yaxis: {title: objectives[1]},
-      zaxis: {title: objectives[2]}
+      scene: {
+        xaxis: {
+            autorange: true,
+            title: objectives[0]},
+        yaxis: {
+            autorange: true,
+            title: objectives[1]},
+        zaxis: {
+            autorange: true,
+            title: objectives[2]}
+      }
   };
   
   Plotly.newPlot('threeDScatterDiv', scatterSeries, layout);
+  
+  window.onresize = function(){ Plotly.Plots.resize(d3.select("threeDScatterDiv")); }
   
       
    /* $(function () {
