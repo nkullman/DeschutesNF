@@ -1,5 +1,6 @@
 # Model files
-/CPLEX/modelFiles/*.txt
+/CPLEX/modelFiles/**/*.txt
+*.lp
 
 # GIS files
 /visualization/data/gisData/
@@ -21,6 +22,7 @@
 /FVS/*.out
 /FVS/*.sum
 /FVS/*.trl
+/FVS/*.zip
 
 # Key files (unmanageably large)
 /FVS/*.key
@@ -35,6 +37,10 @@
 # CPLEX output
 /CPLEX/output/
 /visualization/mapMaking/solutionFiles/
+*.log
+*.sol
+# And CPLEX input
+*.bat
 
 # ipynb checkpoints
 *-checkpoint.ipynb
