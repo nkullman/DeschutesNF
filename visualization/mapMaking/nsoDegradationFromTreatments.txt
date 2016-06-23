@@ -1,0 +1,4 @@
+Climate Scenario,Number of NSO disqualifications from treatment
+NONE,8
+Ensemble_rcp45,9
+Ensemble_rcp85,13
